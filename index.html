@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Slaydchi Mini App — v3 Pro</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #F6F4EE;
+      --bg-card: #FFFFFF;
+      --bg-input: #FFFFFF;
+      --border-soft: #E5E0D5;
+      --text-main: #181818;
+      --text-muted: #78736A;
+      --accent-dark: #181818;
+      --accent-orange: #D96B43;
+      --promo-bg: #F9EFE6;
+      --promo-border: #F2D8C2;
+      --promo-text: #B8522A;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding-bottom: 98px;
+      overflow-x: hidden;
+    }
+
+    /* TOP USER HEADER */
+    .top-header {
+      background: var(--bg-card);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+    .avatar-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #2E3532;
+      color: #fff;
+      font-weight: 700;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .user-text h2 {
+      font-size: 15.5px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .user-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .ui-lang-badge {
+      padding: 6px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: #FAF9F6;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    /* 5-MODE NAVIGATION TABS */
+    .mode-nav-wrap {
+      background: var(--bg-card);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-soft);
+      position: sticky;
+      top: 0;
+      z-index: 15;
+    }
+    .mode-nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .mode-nav::-webkit-scrollbar {
+      display: none;
+    }
+    .mode-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      background: #FAF8F3;
+      color: var(--text-main);
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mode-tab.active {
+      background: var(--accent-dark);
+      color: #FFFFFF;
+      border-color: var(--accent-dark);
+    }
+
+    .container {
+      padding: 14px 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* PROMO BANNER */
+    .promo-banner {
+      background: var(--promo-bg);
+      border: 1px solid var(--promo-border);
+      color: var(--promo-text);
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      line-height: 1.35;
+    }
+
+    .field-group {
+      margin-bottom: 14px;
+    }
+    .field-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+    .field-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .text-input, .text-area {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 13px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .text-input:focus, .text-area:focus {
+      border-color: var(--accent-dark);
+    }
+    .text-input::placeholder, .text-area::placeholder {
+      color: #B0AAA0;
+    }
+    .text-area {
+      min-height: 74px;
+      resize: vertical;
+    }
+
+    .row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* PILLS */
+    .lang-grid, .doc-type-grid, .graphic-type-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .lang-pill, .doc-pill, .graphic-pill {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .lang-pill.active, .doc-pill.active, .graphic-pill.active {
+      background: var(--accent-dark);
+      color: #FFFFFF;
+      border-color: var(--accent-dark);
+      font-weight: 600;
+    }
+
+    /* COUNTER BOX */
+    .counter-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 6px;
+    }
+    .counter-btn {
+      width: 44px;
+      height: 40px;
+      border-radius: 9px;
+      border: none;
+      background: #F3F0E8;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+    .counter-btn:active {
+      background: #E5E0D5;
+    }
+    .counter-value {
+      font-size: 15.5px;
+      font-weight: 700;
+    }
+
+    .segmented-control {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .seg-btn {
+      padding: 11px 8px;
+      border-radius: 11px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: center;
+    }
+    .seg-btn.active {
+      background: var(--accent-dark);
+      color: #FFFFFF;
+      border-color: var(--accent-dark);
+    }
+    .helper-caption {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* TEMPLATES GALLERY */
+    .templates-section {
+      margin-top: 20px;
+    }
+    .templates-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .templates-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .templates-count {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .cat-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar {
+      display: none;
+    }
+    .cat-tab {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .cat-tab.active {
+      background: var(--accent-dark);
+      color: #FFFFFF;
+      border-color: var(--accent-dark);
+    }
+
+    .templates-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .tpl-item {
+      cursor: pointer;
+      user-select: none;
+    }
+    .tpl-preview {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid var(--border-soft);
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px;
+    }
+    .tpl-item.selected .tpl-preview {
+      border-color: var(--accent-orange);
+      box-shadow: 0 0 0 2px rgba(217, 107, 67, 0.25);
+    }
+    .tpl-check {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent-orange);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+    .tpl-item.selected .tpl-check {
+      display: flex;
+    }
+    .tpl-art-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .tpl-content-layer {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+      max-width: 72%;
+    }
+    .tpl-live-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 1.22;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+    }
+    .tpl-live-meta {
+      font-size: 6.5px;
+      opacity: 0.78;
+      margin-top: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tpl-name-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-main);
+      margin-top: 5px;
+      padding-left: 2px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* FIXED BOTTOM BAR */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(246, 244, 238, 0.94);
+      backdrop-filter: blur(8px);
+      padding: 12px 16px 18px;
+      border-top: 1px solid var(--border-soft);
+      z-index: 20;
+    }
+    .submit-btn {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      display: block;
+      background: #1C1C1C;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 14px;
+      padding: 15px;
+      font-size: 15.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* CONFIRMATION MODAL */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+    .modal-backdrop.show {
+      display: flex;
+    }
+    .modal-card {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 340px;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.22);
+    }
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #181818;
+    }
+    .modal-desc {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+    .modal-meta {
+      font-size: 14px;
+      font-weight: 600;
+      color: #181818;
+      margin-bottom: 18px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 18px;
+    }
+    .modal-btn {
+      background: none;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      color: #2678B6;
+      cursor: pointer;
+      padding: 6px 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP USER BAR -->
+  <div class="top-header">
+    <div class="user-info">
+      <div class="avatar-circle" id="userAvatar">M</div>
+      <div class="user-text">
+        <h2 id="userGreeting">Salom, Мухаммадкодир</h2>
+        <p id="modeSubText">Mavzuni yozing va shablonni tanlang.</p>
+      </div>
+    </div>
+    <div class="ui-lang-badge">O'zbekcha ▾</div>
+  </div>
+
+  <!-- TOP 5-MODE NAVIGATION TABS -->
+  <div class="mode-nav-wrap">
+    <div class="mode-nav" id="modeNav">
+      <button type="button" class="mode-tab active" data-mode="taqdimot">📊 Taqdimot</button>
+      <button type="button" class="mode-tab" data-mode="referat">📝 Referat / Mustaqil</button>
+      <button type="button" class="mode-tab" data-mode="test">🧪 Testlar</button>
+      <button type="button" class="mode-tab" data-mode="krossvord">🧩 Krossvord</button>
+      <button type="button" class="mode-tab" data-mode="infografika">🧠 Grafiklar</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- PROMO BANNER -->
+    <div class="promo-banner" id="promoBanner">
+      <span>🎁</span>
+      <span id="promoText">Taqdimot: 24 ta shablon, mavzuga mos rasmlar · PDF + PPTX formatda</span>
+    </div>
+
+    <!-- ISH TURI (Faqat Referat rejimida) -->
+    <div class="field-group hidden" id="docTypeGroup">
+      <label class="field-label">Ish turi</label>
+      <div class="doc-type-grid" id="docTypeGrid">
+        <button type="button" class="doc-pill active" data-doctype="Mustaqil ish">Mustaqil ish</button>
+        <button type="button" class="doc-pill" data-doctype="Referat">Referat</button>
+        <button type="button" class="doc-pill" data-doctype="Kurs ishi">Kurs ishi</button>
+        <button type="button" class="doc-pill" data-doctype="Ilmiy maqola">Ilmiy maqola</button>
+        <button type="button" class="doc-pill" data-doctype="Tezis">Tezis</button>
+      </div>
+    </div>
+
+    <!-- GRAFIK ORGANAYZER TURI (Faqat Infografika rejimida) -->
+    <div class="field-group hidden" id="graphicTypeGroup">
+      <label class="field-label">Pedagogik grafik / Infografika turi</label>
+      <div class="graphic-type-grid" id="graphicTypeGrid">
+        <button type="button" class="graphic-pill active" data-gtype="klaster">🕸 Klaster</button>
+        <button type="button" class="graphic-pill" data-gtype="baliq">🐟 Baliq skeleti</button>
+        <button type="button" class="graphic-pill" data-gtype="venn">⭕ Venn diagrammasi</button>
+        <button type="button" class="graphic-pill" data-gtype="swot">📊 SWOT tahlil</button>
+      </div>
+    </div>
+
+    <!-- FAN NOMI -->
+    <div class="field-group hidden" id="subjectGroup">
+      <label class="field-label">Fan nomi</label>
+      <input type="text" id="subjectInput" class="text-input" placeholder="Masalan: Organik kimyo / Farmakologiya" />
+    </div>
+
+    <!-- MAVZU -->
+    <div class="field-group">
+      <label class="field-label" id="topicLabel">Mavzu</label>
+      <input type="text" id="topicInput" class="text-input" placeholder="Masalan: Parafinlar sintezi va xossalari" />
+    </div>
+
+    <!-- MUALLIF -->
+    <div class="field-group">
+      <label class="field-label">Muallif (Talaba)</label>
+      <input type="text" id="authorInput" class="text-input" placeholder="Ism Familiya" value="Мухаммадкодир" />
+    </div>
+
+    <!-- GURUH VA O'QITUVCHI -->
+    <div class="field-group row-2col hidden" id="teacherGroup">
+      <div>
+        <label class="field-label">Guruh / Kurs</label>
+        <input type="text" id="groupInput" class="text-input" placeholder="Masalan: 401-guruh" value="4-kurs" />
+      </div>
+      <div>
+        <label class="field-label">Qabul qildi (O'qituvchi)</label>
+        <input type="text" id="teacherInput" class="text-input" placeholder="F.I.Sh (ixtiyoriy)" />
+      </div>
+    </div>
+
+    <!-- TASHKILOT -->
+    <div class="field-group">
+      <label class="field-label">Tashkilot / OTM</label>
+      <input type="text" id="orgInput" class="text-input" placeholder="Masalan, Farmatsevtika instituti" value="Farmatsevtika instituti" />
+    </div>
+
+    <!-- SHAHAR & YIL -->
+    <div class="field-group row-2col">
+      <div>
+        <label class="field-label">Shahar</label>
+        <input type="text" id="cityInput" class="text-input" value="Toshkent" />
+      </div>
+      <div>
+        <label class="field-label">Yil</label>
+        <input type="text" id="yearInput" class="text-input" value="2026" />
+      </div>
+    </div>
+
+    <!-- TIL -->
+    <div class="field-group">
+      <label class="field-label">Yozilish tili</label>
+      <p class="field-sub">Butun taqdimot va hujjatlar shu tilda yoziladi. «O‘zbekcha» — yangi alifbo, «O'zbekcha» — standart lotin, «Ўзбекча» — kirill yozuvi.</p>
+      <div class="lang-grid" id="langGrid">
+        <button type="button" class="lang-pill active" data-lang="uz_lat">O‘zbekcha</button>
+        <button type="button" class="lang-pill" data-lang="uz_old">O'zbekcha</button>
+        <button type="button" class="lang-pill" data-lang="uz_cyr">Ўзбекча</button>
+        <button type="button" class="lang-pill" data-lang="ru">Русский</button>
+        <button type="button" class="lang-pill" data-lang="en">English</button>
+        <button type="button" class="lang-pill" data-lang="kaa">Qaraqalpaqsha</button>
+        <button type="button" class="lang-pill" data-lang="kk">Қазақша</button>
+        <button type="button" class="lang-pill" data-lang="tg">Тоҷикӣ</button>
+        <button type="button" class="lang-pill" data-lang="ky">Кыргызча</button>
+        <button type="button" class="lang-pill" data-lang="tk">Türkmençe</button>
+      </div>
+    </div>
+
+    <!-- DINAMIK SON -->
+    <div class="field-group" id="counterGroup">
+      <label class="field-label" id="counterLabel">Slaydlar soni</label>
+      <div class="counter-box">
+        <button type="button" class="counter-btn" id="minusCount">−</button>
+        <span class="counter-value" id="countValueText">10 ta slayd</span>
+        <button type="button" class="counter-btn" id="plusCount">+</button>
+      </div>
+      <p class="helper-caption" id="counterHelper">Titul, Kirish, Reja, Manbalar va yakun slaydi doim bo'ladi.</p>
+    </div>
+
+    <!-- MATN HAJMI -->
+    <div class="field-group" id="densityGroup">
+      <label class="field-label" id="densityLabel">Matn hajmi</label>
+      <div class="segmented-control" id="densityControl">
+        <button type="button" class="seg-btn" data-density="londa">Lo'nda</button>
+        <button type="button" class="seg-btn active" data-density="muvozanatli">Muvozanatli</button>
+        <button type="button" class="seg-btn" data-density="batafsil">Batafsil</button>
+      </div>
+      <p class="helper-caption" id="densityCaption">Matn va bo'sh joy teng — ko'p hollarda eng qulayi.</p>
+    </div>
+
+    <!-- QO'SHIMCHA TALABLAR -->
+    <div class="field-group">
+      <label class="field-label">Qo'shimcha talablar (ixtiyoriy)</label>
+      <textarea id="extraInput" class="text-area" placeholder="Masalan: Rasmlar mavzuga mos bo'lsin, bitta listida krossvord yoki kimyoviy formulalar va jadval bo'lsin"></textarea>
+    </div>
+
+    <!-- SHABLONLAR GALEREYASI -->
+    <div class="templates-section" id="templatesSection">
+      <div class="templates-header">
+        <h3>Shablonlar</h3>
+        <span class="templates-count" id="tplCountLabel">24 ta</span>
+      </div>
+
+      <div class="cat-tabs" id="catTabs">
+        <button type="button" class="cat-tab active" data-cat="all">Barchasi</button>
+        <button type="button" class="cat-tab" data-cat="akademik">Akademik</button>
+        <button type="button" class="cat-tab" data-cat="biznes">Biznes</button>
+        <button type="button" class="cat-tab" data-cat="kreativ">Kreativ</button>
+        <button type="button" class="cat-tab" data-cat="minimalist">Minimalist</button>
+      </div>
+
+      <div class="templates-grid" id="templatesGrid"></div>
+    </div>
+  </div>
+
+  <!-- FIXED SUBMIT BUTTON -->
+  <div class="bottom-bar">
+    <button type="button" class="submit-btn" id="openConfirmBtn">Slayd tayyorlash · tekin</button>
+  </div>
+
+  <!-- CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="confirmModal">
+    <div class="modal-card">
+      <div class="modal-title" id="modalTopicTitle">Mavzu: «Parafinlar sintezi»</div>
+      <div class="modal-desc">
+        Mavzu to'g'ri yozilganmi? Xato bo'lsa, AI boshqa narsa haqida yozib qo'yishi mumkin.
+      </div>
+      <div class="modal-meta" id="modalSlideMeta">10 ta slayd · tekin</div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn" id="cancelModalBtn">Bekor qilish</button>
+        <button type="button" class="modal-btn" id="confirmSendBtn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    let tgUserId = null;
+    if (tg) {
+      tg.expand();
+      tg.ready();
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        tgUserId = user.id;
+        if (user.first_name) {
+          document.getElementById('userGreeting').textContent = `Salom, ${user.first_name}`;
+          document.getElementById('userAvatar').textContent = user.first_name.charAt(0).toUpperCase();
+          document.getElementById('authorInput').value = [user.first_name, user.last_name || ''].join(' ').trim();
+        }
+      }
+    }
+
+    const DENSITY_CAPTIONS = {
+      londa: "Qisqa tezislar va asosiy faktlar — tez ko'rib chiqish uchun.",
+      muvozanatli: "Matn va bo'sh joy teng — ko'p hollarda eng qulayi.",
+      batafsil: "To'liq gaplar, izoh va misollar — o'qib tushunsa bo'ladigan slaydlar."
+    };
+
+    const TEMPLATES = [
+      {
+        id: "xarita", name: "Xarita", cat: "akademik", bg: "#F3EFE6", textColor: "#233123", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M120 -10 C140 40, 190 50, 210 90" stroke="#D5CBB8" stroke-width="1"/>
+          <path d="M100 -10 C125 50, 175 65, 210 110" stroke="#D5CBB8" stroke-width="1"/>
+          <path d="M80 -10 C110 60, 160 80, 210 130" stroke="#D5CBB8" stroke-width="0.8"/>
+          <path d="M-10 95 C40 85, 85 105, 130 130" stroke="#D5CBB8" stroke-width="1"/>
+          <polygon points="180,14 184,26 180,23 176,26" fill="#C85A32"/>
+          <text x="177" y="12" fill="#4A5D46" font-size="6" font-weight="bold">N</text>
+          <line x1="12" y1="108" x2="188" y2="108" stroke="#4A5D46" stroke-width="0.6" opacity="0.4"/>
+        </svg>`
+      },
+      {
+        id: "samarqand", name: "Samarqand", cat: "kreativ", bg: "#0D3B42", textColor: "#F7EFE0", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M135 125 L135 60 Q162 22 190 60 L190 125 Z" fill="#F3E9D2" stroke="#D4AF37" stroke-width="2"/>
+          <path d="M142 125 L142 65 Q162 34 183 65 L183 125 Z" fill="#134E57"/>
+          <circle cx="30" cy="22" r="1.5" fill="#D4AF37" opacity="0.7"/>
+        </svg>`
+      },
+      {
+        id: "aurora", name: "Aurora", cat: "kreativ", bg: "linear-gradient(135deg, #0D0924 0%, #1E3B70 55%, #166D67 100%)", textColor: "#FFFFFF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="132" y="14" width="56" height="96" rx="8" fill="rgba(255,255,255,0.08)" stroke="#4FF0D6" stroke-width="1.2"/>
+          <circle cx="155" cy="60" r="24" fill="#9D4EDD" opacity="0.28"/>
+        </svg>`
+      },
+      {
+        id: "editorial", name: "Editorial", cat: "akademik", bg: "#F9F6F0", textColor: "#1A1A1A", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="132" y="75" width="7" height="32" fill="#B8292F"/>
+          <rect x="143" y="62" width="7" height="45" fill="#B8292F"/>
+          <rect x="154" y="46" width="7" height="61" fill="#B8292F"/>
+          <rect x="165" y="34" width="7" height="73" fill="#B8292F"/>
+          <rect x="176" y="20" width="7" height="87" fill="#8E1C20"/>
+        </svg>`
+      },
+      {
+        id: "korporativ", name: "Korporativ", cat: "biznes", bg: "#0A1E3C", textColor: "#FFFFFF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="130" y="0" width="70" height="125" fill="#2563EB"/>
+          <rect x="140" y="32" width="18" height="93" fill="#0F294A"/>
+          <rect x="162" y="18" width="22" height="107" fill="#173A66"/>
+        </svg>`
+      },
+      {
+        id: "tabiat", name: "Tabiat", cat: "akademik", bg: "#F3F7F0", textColor: "#1E3A2B", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="158" cy="62" r="36" fill="#CBE0C6"/>
+          <path d="M122 86 Q155 62 194 86 L194 105 L122 105 Z" fill="#528265"/>
+        </svg>`
+      },
+      {
+        id: "akademik", name: "Akademik", cat: "akademik", bg: "#5E1914", textColor: "#FDFBF7", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="7" y="7" width="186" height="111" stroke="#D4AF37" stroke-width="0.9" opacity="0.6"/>
+          <circle cx="24" cy="24" r="10" fill="#8A2B23" stroke="#D4AF37" stroke-width="1"/>
+        </svg>`
+      },
+      {
+        id: "chizma", name: "Chizma", cat: "akademik", bg: "#184A8C", textColor: "#FFFFFF", font: "'JetBrains Mono', monospace",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="158" cy="60" r="32" stroke="rgba(255,255,255,0.35)" stroke-width="1" stroke-dasharray="3 2"/>
+          <circle cx="158" cy="60" r="20" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>
+        </svg>`
+      },
+      {
+        id: "galereya", name: "Galereya", cat: "akademik", bg: "#1B3B2B", textColor: "#FFFFFF", customTextColor: "#1B3B2B", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="0" y="0" width="118" height="125" fill="#F7F5F0"/>
+          <rect x="132" y="20" width="54" height="82" fill="#F7F5F0" stroke="#D4AF37" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: "rasmiy", name: "Rasmiy", cat: "akademik", bg: "#F8F9FA", textColor: "#1B2A4A", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="0" y="0" width="200" height="6" fill="#1B2A4A"/>
+          <rect x="0" y="6" width="200" height="3" fill="#2E8B57"/>
+          <circle cx="164" cy="62" r="24" stroke="#D0D7DE" stroke-width="1.5"/>
+        </svg>`
+      },
+      {
+        id: "kitob", name: "Kitob", cat: "akademik", bg: "#F5EFE6", textColor: "#2C221E", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <line x1="108" y1="8" x2="108" y2="117" stroke="#C8B9A6" stroke-width="2"/>
+          <rect x="122" y="52" width="8" height="44" fill="#3B5998"/>
+          <rect x="134" y="38" width="8" height="58" fill="#5C7CFA"/>
+          <rect x="146" y="60" width="8" height="36" fill="#D96B43"/>
+        </svg>`
+      },
+      {
+        id: "doska", name: "Doska", cat: "akademik", bg: "#213829", textColor: "#F4F6F4", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="4" y="4" width="192" height="117" rx="6" stroke="#8C6239" stroke-width="4"/>
+          <path d="M128 38 Q145 28 160 38 T190 38" stroke="#F59F00" stroke-width="2" fill="none"/>
+        </svg>`
+      },
+      {
+        id: "daftar", name: "Daftar", cat: "akademik", bg: "#FFFDF7", textColor: "#222222", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <line x1="0" y1="25" x2="200" y2="25" stroke="#E2ECE9" stroke-width="1"/>
+          <line x1="0" y1="45" x2="200" y2="45" stroke="#E2ECE9" stroke-width="1"/>
+          <line x1="24" y1="0" x2="24" y2="125" stroke="#F8B4B4" stroke-width="1.2"/>
+          <rect x="128" y="26" width="56" height="58" rx="4" fill="#FDE047" transform="rotate(3 156 55)"/>
+        </svg>`
+      },
+      {
+        id: "dashboard", name: "Dashboard", cat: "biznes", bg: "#14213D", textColor: "#FFFFFF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="125" y="78" width="9" height="32" rx="2" fill="#FCA311"/>
+          <rect x="139" y="64" width="9" height="46" rx="2" fill="#FCA311"/>
+          <rect x="153" y="48" width="9" height="62" rx="2" fill="#FCA311"/>
+          <rect x="167" y="34" width="9" height="76" rx="2" fill="#FCA311"/>
+        </svg>`
+      },
+      {
+        id: "shveytsar", name: "Shveytsar", cat: "minimalist", bg: "#F4F4F2", textColor: "#111111", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="174" cy="34" r="9" fill="#E63946"/>
+          <line x1="12" y1="24" x2="188" y2="24" stroke="#111111" stroke-width="1"/>
+        </svg>`
+      },
+      {
+        id: "klinika", name: "Klinika", cat: "minimalist", bg: "#F4F9F9", textColor: "#16425B", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="124" y="16" width="64" height="92" rx="6" fill="#BCE7E5"/>
+          <circle cx="156" cy="48" r="14" fill="#E07A5F"/>
+        </svg>`
+      },
+      {
+        id: "terminal", name: "Terminal", cat: "minimalist", bg: "#0D1117", textColor: "#3FB950", font: "'JetBrains Mono', monospace",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="16" cy="14" r="3" fill="#FF5F56"/>
+          <circle cx="26" cy="14" r="3" fill="#FFBD2E"/>
+          <circle cx="36" cy="14" r="3" fill="#27C93F"/>
+          <rect x="128" y="34" width="58" height="62" stroke="#238636" stroke-width="1"/>
+        </svg>`
+      },
+      {
+        id: "zen", name: "Zen", cat: "minimalist", bg: "#F7F5F0", textColor: "#2B2B2A", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="154" cy="62" r="28" stroke="#2B2B2A" stroke-width="3.5" stroke-dasharray="140 30"/>
+        </svg>`
+      },
+      {
+        id: "bauhaus", name: "Bauhaus", cat: "kreativ", bg: "#F4EFE6", textColor: "#181818", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="132" y="18" width="52" height="88" fill="#FFFFFF" stroke="#181818" stroke-width="1.5"/>
+          <circle cx="150" cy="48" r="14" fill="#E63946"/>
+          <polygon points="154,88 170,58 182,88" fill="#1D3557"/>
+        </svg>`
+      },
+      {
+        id: "brutalist", name: "Brutalist", cat: "kreativ", bg: "#FFE600", textColor: "#111111", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="8" y="8" width="184" height="109" stroke="#111111" stroke-width="2.5"/>
+          <rect x="128" y="24" width="52" height="52" fill="#FFFFFF" stroke="#111111" stroke-width="2.5"/>
+        </svg>`
+      },
+      {
+        id: "oltin_soat", name: "Oltin soat", cat: "kreativ", bg: "linear-gradient(135deg, #D96B43 0%, #E89954 100%)", textColor: "#FFF8F0", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="156" cy="54" r="22" fill="#FFD166"/>
+          <path d="M116 96 Q156 68 200 96 L200 125 L116 125 Z" fill="#5C2C24"/>
+        </svg>`
+      },
+      {
+        id: "tungi_osmon", name: "Tungi osmon", cat: "kreativ", bg: "#121329", textColor: "#F0EFF5", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="168" cy="28" r="10" fill="#F4E285"/>
+          <polygon points="118,125 148,72 178,125" fill="#2A2B52"/>
+        </svg>`
+      },
+      {
+        id: "kungaboqar", name: "Kungaboqar", cat: "kreativ", bg: "#FBE57B", textColor: "#2D2314", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="156" cy="48" r="16" fill="#E09F3E"/>
+          <circle cx="156" cy="48" r="9" fill="#3D2616"/>
+          <line x1="156" y1="64" x2="156" y2="120" stroke="#3D2616" stroke-width="2.5"/>
+        </svg>`
+      },
+      {
+        id: "bento", name: "Bento", cat: "biznes", bg: "#F3F2EE", textColor: "#181818", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="128" y="14" width="58" height="44" rx="8" fill="#E9D8C8"/>
+          <rect x="128" y="64" width="27" height="44" rx="8" fill="#181818"/>
+          <rect x="159" y="64" width="27" height="44" rx="8" fill="#D96B43"/>
+        </svg>`
+      }
+    ];
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialMode = urlParams.get("mode") || "taqdimot";
+    const apiEndpoint = urlParams.get("api_url") || "";
+
+    let state = {
+      mode: initialMode,       // taqdimot | referat | test | krossvord | infografika
+      docType: "Mustaqil ish",
+      graphicType: "klaster",  // klaster | baliq | venn | swot
+      subject: "",
+      topic: "",
+      author: document.getElementById('authorInput').value,
+      group: "4-kurs",
+      teacher: "",
+      org: document.getElementById('orgInput').value,
+      city: "Toshkent",
+      year: "2026",
+      lang: "uz_lat",
+      count: 10,
+      density: "muvozanatli",
+      extra: "",
+      templateId: "xarita",
+      category: "all"
+    };
+
+    function updateModeUI() {
+      document.querySelectorAll('.mode-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.mode === state.mode);
+      });
+
+      const docTypeGroup = document.getElementById('docTypeGroup');
+      const graphicTypeGroup = document.getElementById('graphicTypeGroup');
+      const subjectGroup = document.getElementById('subjectGroup');
+      const teacherGroup = document.getElementById('teacherGroup');
+      const counterGroup = document.getElementById('counterGroup');
+      const templatesSection = document.getElementById('templatesSection');
+      const densityGroup = document.getElementById('densityGroup');
+
+      const promoText = document.getElementById('promoText');
+      const counterLabel = document.getElementById('counterLabel');
+      const counterHelper = document.getElementById('counterHelper');
+      const submitBtn = document.getElementById('openConfirmBtn');
+      const extraInput = document.getElementById('extraInput');
+
+      docTypeGroup.classList.add('hidden');
+      graphicTypeGroup.classList.add('hidden');
+      subjectGroup.classList.add('hidden');
+      teacherGroup.classList.add('hidden');
+      counterGroup.classList.remove('hidden');
+      templatesSection.classList.add('hidden');
+      densityGroup.classList.remove('hidden');
+
+      if (state.mode === 'taqdimot') {
+        templatesSection.classList.remove('hidden');
+        promoText.textContent = "Taqdimot: 24 ta shablon, mavzuga mos rasmlar · PDF + PPTX";
+        counterLabel.textContent = "Slaydlar soni";
+        counterHelper.textContent = "Titul, Kirish, Reja, Manbalar va yakun slaydi doim bo'ladi.";
+        submitBtn.textContent = "Slayd tayyorlash · tekin";
+        extraInput.placeholder = "Masalan: Rasmlar mavzuga mos bo'lsin, bitta listida krossvord yoki jadval bo'lsin";
+        if (state.count < 6 || state.count > 20) state.count = 10;
+      } else if (state.mode === 'referat') {
+        docTypeGroup.classList.remove('hidden');
+        subjectGroup.classList.remove('hidden');
+        teacherGroup.classList.remove('hidden');
+        promoText.textContent = `${state.docType} — OTM standarti bo'yicha Titul, Reja, Kirish, Xulosa va Adabiyotlar bilan (Word + PDF)`;
+        counterLabel.textContent = "Sahifalar (betlar) soni";
+        counterHelper.textContent = "Titul beti, Mundarija (Reja), Kirish, Asosiy boblar, Xulosa va Manbalar kiritiladi.";
+        submitBtn.textContent = `${state.docType} tayyorlash (Word + PDF)`;
+        extraInput.placeholder = "Masalan: Jadval, formulalar va O'zbekiston amaliyoti bo'lsin";
+        if (state.count < 5 || state.count > 35) state.count = 12;
+      } else if (state.mode === 'test') {
+        subjectGroup.classList.remove('hidden');
+        promoText.textContent = "Testlar to'plami — 4 variantli (A, B, C, D) savollar va oxirida javoblar kaliti bilan (Word + PDF)";
+        counterLabel.textContent = "Test savollari soni";
+        counterHelper.textContent = "Har bir savol 4 ta variant va oxirgi betda to'g'ri javoblar kaliti bilan tuziladi.";
+        submitBtn.textContent = "Testlar to'plamini tayyorlash (Word + PDF)";
+        extraInput.placeholder = "Masalan: Klinik vaziyatli masalalar va formulali savollar ham qo'shilsin";
+        if (state.count < 5 || state.count > 50) state.count = 15;
+      } else if (state.mode === 'krossvord') {
+        subjectGroup.classList.remove('hidden');
+        densityGroup.classList.add('hidden');
+        promoText.textContent = "Krossvord — Katakchali bo'sh to'r + Javoblari to'ldirilgan kalit varag'i (PDF + Word)";
+        counterLabel.textContent = "Krossvord so'zlari soni";
+        counterHelper.textContent = "1-betda yechish uchun bo'sh katakchali krossvord, 2-betda to'ldirilgan javoblar chiqadi.";
+        submitBtn.textContent = "Krossvord tayyorlash (PDF + Word)";
+        extraInput.placeholder = "Masalan: Faqat asosiy atamalar va preparat/reaksiya nomlari bo'lsin";
+        if (state.count < 6 || state.count > 20) state.count = 10;
+      } else if (state.mode === 'infografika') {
+        graphicTypeGroup.classList.remove('hidden');
+        subjectGroup.classList.remove('hidden');
+        counterGroup.classList.add('hidden');
+        densityGroup.classList.add('hidden');
+        promoText.textContent = "Pedagogik grafik organayzerlar (Klaster, Baliq skeleti, Venn diagrammasi, SWOT) — tayyor A4 PDF plakat!";
+        submitBtn.textContent = "Grafik organayzer tayyorlash (PDF)";
+        extraInput.placeholder = "Masalan: Markaziy tushuncha va 6 ta tarmoq aniq misollar bilan yozilsin";
+      }
+      updateCounterText();
+    }
+
+    function updateCounterText() {
+      const el = document.getElementById('countValueText');
+      if (state.mode === 'taqdimot') el.textContent = `${state.count} ta slayd`;
+      else if (state.mode === 'referat') el.textContent = `${state.count} bet (sahifa)`;
+      else if (state.mode === 'test') el.textContent = `${state.count} ta test savoli`;
+      else if (state.mode === 'krossvord') el.textContent = `${state.count} ta kalit so'z`;
+      else if (state.mode === 'infografika') el.textContent = `1 betlik A4 infografika`;
+    }
+
+    function renderTemplates() {
+      const grid = document.getElementById('templatesGrid');
+      const liveTitle = (state.topic || "Parafinlar sintezi va xossalari").trim();
+      const liveMeta = `${state.author || "Muallif"} · ${state.org || "OTM"}`;
+
+      const filtered = TEMPLATES.filter(t => state.category === 'all' || t.cat === state.category);
+      document.getElementById('tplCountLabel').textContent = `${filtered.length} ta`;
+
+      grid.innerHTML = filtered.map(t => {
+        const isSelected = t.id === state.templateId;
+        const txtCol = t.customTextColor || t.textColor;
+        return `
+          <div class="tpl-item ${isSelected ? 'selected' : ''}" data-id="${t.id}">
+            <div class="tpl-preview" style="background: ${t.bg};">
+              <div class="tpl-check">✓</div>
+              <div class="tpl-art-layer">${t.svg}</div>
+              <div class="tpl-content-layer" style="color: ${txtCol}; font-family: ${t.font};">
+                <div class="tpl-live-title">${escapeHtml(liveTitle)}</div>
+                <div class="tpl-live-meta">${escapeHtml(liveMeta)}</div>
+              </div>
+            </div>
+            <div class="tpl-name-label">${t.name}</div>
+          </div>
+        `;
+      }).join('');
+
+      grid.querySelectorAll('.tpl-item').forEach(card => {
+        card.addEventListener('click', () => {
+          state.templateId = card.dataset.id;
+          renderTemplates();
+        });
+      });
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    document.getElementById('modeNav').addEventListener('click', e => {
+      const btn = e.target.closest('.mode-tab');
+      if (!btn) return;
+      state.mode = btn.dataset.mode;
+      updateModeUI();
+    });
+
+    document.getElementById('docTypeGrid').addEventListener('click', e => {
+      const btn = e.target.closest('.doc-pill');
+      if (!btn) return;
+      document.querySelectorAll('.doc-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.docType = btn.dataset.doctype;
+      updateModeUI();
+    });
+
+    document.getElementById('graphicTypeGrid').addEventListener('click', e => {
+      const btn = e.target.closest('.graphic-pill');
+      if (!btn) return;
+      document.querySelectorAll('.graphic-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.graphicType = btn.dataset.gtype;
+    });
+
+    document.getElementById('topicInput').addEventListener('input', e => {
+      state.topic = e.target.value;
+      renderTemplates();
+    });
+    document.getElementById('subjectInput').addEventListener('input', e => state.subject = e.target.value);
+    document.getElementById('authorInput').addEventListener('input', e => {
+      state.author = e.target.value;
+      renderTemplates();
+    });
+    document.getElementById('groupInput').addEventListener('input', e => state.group = e.target.value);
+    document.getElementById('teacherInput').addEventListener('input', e => state.teacher = e.target.value);
+    document.getElementById('orgInput').addEventListener('input', e => {
+      state.org = e.target.value;
+      renderTemplates();
+    });
+    document.getElementById('cityInput').addEventListener('input', e => state.city = e.target.value);
+    document.getElementById('yearInput').addEventListener('input', e => state.year = e.target.value);
+    document.getElementById('extraInput').addEventListener('input', e => state.extra = e.target.value);
+
+    document.getElementById('langGrid').addEventListener('click', e => {
+      const btn = e.target.closest('.lang-pill');
+      if (!btn) return;
+      document.querySelectorAll('.lang-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.lang = btn.dataset.lang;
+    });
+
+    document.getElementById('minusCount').addEventListener('click', () => {
+      const minVal = 6;
+      if (state.count > minVal) {
+        state.count -= (state.mode === 'test' ? 5 : 1);
+        if (state.count < minVal) state.count = minVal;
+        updateCounterText();
+      }
+    });
+    document.getElementById('plusCount').addEventListener('click', () => {
+      const maxVal = state.mode === 'test' ? 40 : (state.mode === 'referat' ? 30 : 20);
+      if (state.count < maxVal) {
+        state.count += (state.mode === 'test' ? 5 : 1);
+        updateCounterText();
+      }
+    });
+
+    document.getElementById('densityControl').addEventListener('click', e => {
+      const btn = e.target.closest('.seg-btn');
+      if (!btn) return;
+      document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.density = btn.dataset.density;
+      document.getElementById('densityCaption').textContent = DENSITY_CAPTIONS[state.density];
+    });
+
+    document.getElementById('catTabs').addEventListener('click', e => {
+      const tab = e.target.closest('.cat-tab');
+      if (!tab) return;
+      document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.category = tab.dataset.cat;
+      renderTemplates();
+    });
+
+    const modal = document.getElementById('confirmModal');
+    document.getElementById('openConfirmBtn').addEventListener('click', () => {
+      const cleanTopic = state.topic.trim();
+      if (!cleanTopic) {
+        alert("Iltimos, avval mavzuni kiriting!");
+        document.getElementById('topicInput').focus();
+        return;
+      }
+      document.getElementById('modalTopicTitle').textContent = `Mavzu: «${cleanTopic}»`;
+      document.getElementById('modalSlideMeta').textContent = document.getElementById('countValueText').textContent + " · tayyorlash";
+      modal.classList.add('show');
+    });
+
+    document.getElementById('cancelModalBtn').addEventListener('click', () => {
+      modal.classList.remove('show');
+    });
+
+    document.getElementById('confirmSendBtn').addEventListener('click', async () => {
+      modal.classList.remove('show');
+      const payload = {
+        action: "create_slaydchi_content",
+        user_id: tgUserId,
+        mode: state.mode,
+        doc_type: state.docType,
+        graphic_type: state.graphicType,
+        subject: state.subject.trim(),
+        topic: state.topic.trim(),
+        author: state.author.trim() || "Talaba",
+        group: state.group.trim(),
+        teacher: state.teacher.trim(),
+        org: state.org.trim() || "OTM",
+        city: state.city.trim() || "Toshkent",
+        year: state.year.trim() || "2026",
+        lang: state.lang,
+        slides_count: state.count,
+        count: state.count,
+        density: state.density,
+        extra_requirements: state.extra.trim(),
+        template_id: state.templateId
+      };
+
+      // 1-usul: Agar Backend HTTP API manzili berilgan bo'lsa (Inline va Menu tugmalar uchun ham 100% ishlaydi)
+      if (apiEndpoint && tgUserId) {
+        try {
+          await fetch(apiEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (tg) tg.close();
+          return;
+        } catch (err) {
+          console.warn("API post fallback to sendData:", err);
+        }
+      }
+
+      // 2-usul: Standart Telegram WebApp sendData (ReplyKeyboardMarkup uchun)
+      if (tg) {
+        try {
+          tg.sendData(JSON.stringify(payload));
+          tg.close();
+        } catch (e) {
+          alert("Buyurtma yuborildi!");
+        }
+      } else {
+        alert("Ma'lumot tayyor: " + JSON.stringify(payload, null, 2));
+      }
+    });
+
+    updateModeUI();
+    renderTemplates();
+  </script>
+</body>
+</html>
