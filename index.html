@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Slaydchi Mini App — v3 Pro</title>
+  <title>Slaydchi Mini App — v4 Ultra</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <style>
@@ -495,9 +495,9 @@
   <!-- TOP USER BAR -->
   <div class="top-header">
     <div class="user-info">
-      <div class="avatar-circle" id="userAvatar">M</div>
+      <div class="avatar-circle" id="userAvatar">S</div>
       <div class="user-text">
-        <h2 id="userGreeting">Salom, Мухаммадкодир</h2>
+        <h2 id="userGreeting">Salom, Foydalanuvchi</h2>
         <p id="modeSubText">Mavzuni yozing va shablonni tanlang.</p>
       </div>
     </div>
@@ -519,7 +519,7 @@
     <!-- PROMO BANNER -->
     <div class="promo-banner" id="promoBanner">
       <span>🎁</span>
-      <span id="promoText">Taqdimot: 24 ta shablon, mavzuga mos rasmlar · PDF + PPTX formatda</span>
+      <span id="promoText">Taqdimot: 33 ta shablon, mavzuga mos rasmlar · PDF + PPTX formatda</span>
     </div>
 
     <!-- ISH TURI (Faqat Referat rejimida) -->
@@ -560,7 +560,7 @@
     <!-- MUALLIF -->
     <div class="field-group">
       <label class="field-label">Muallif (Talaba)</label>
-      <input type="text" id="authorInput" class="text-input" placeholder="Ism Familiya" value="Мухаммадкодир" />
+      <input type="text" id="authorInput" class="text-input" placeholder="Ism Familiya" value="" />
     </div>
 
     <!-- GURUH VA O'QITUVCHI -->
@@ -643,12 +643,13 @@
     <div class="templates-section" id="templatesSection">
       <div class="templates-header">
         <h3>Shablonlar</h3>
-        <span class="templates-count" id="tplCountLabel">24 ta</span>
+        <span class="templates-count" id="tplCountLabel">33 ta</span>
       </div>
 
       <div class="cat-tabs" id="catTabs">
         <button type="button" class="cat-tab active" data-cat="all">Barchasi</button>
         <button type="button" class="cat-tab" data-cat="akademik">Akademik</button>
+        <button type="button" class="cat-tab" data-cat="tibbiyot">Tibbiyot & Kimyo</button>
         <button type="button" class="cat-tab" data-cat="biznes">Biznes</button>
         <button type="button" class="cat-tab" data-cat="kreativ">Kreativ</button>
         <button type="button" class="cat-tab" data-cat="minimalist">Minimalist</button>
@@ -702,6 +703,69 @@
     };
 
     const TEMPLATES = [
+      {
+        id: "farmakologiya", name: "Farmakologiya Mint", cat: "tibbiyot", bg: "#EFF8F6", textColor: "#0D3B46", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <polygon points="158,24 182,38 182,66 158,80 134,66 134,38" fill="#B5DDD8" stroke="#0F766E" stroke-width="2"/>
+          <circle cx="158" cy="24" r="3.5" fill="#E05A47"/>
+          <circle cx="182" cy="66" r="3.5" fill="#E05A47"/>
+          <circle cx="134" cy="66" r="3.5" fill="#0F766E"/>
+        </svg>`
+      },
+      {
+        id: "organik_kimyo", name: "Organik Kimyo Lab", cat: "tibbiyot", bg: "#1E293B", textColor: "#FFFFFF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <polygon points="148,30 168,42 168,66 148,78 128,66 128,42" stroke="#38BDF8" stroke-width="1.8" fill="none"/>
+          <polygon points="168,66 188,78 188,102 168,114 148,102 148,78" stroke="#F59E0B" stroke-width="1.8" fill="none"/>
+        </svg>`
+      },
+      {
+        id: "genetika", name: "Genetika va DNK", cat: "tibbiyot", bg: "#2E1065", textColor: "#F5F3FF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M135 20 Q160 62 185 20" stroke="#2DD4BF" stroke-width="2" fill="none"/>
+          <path d="M135 105 Q160 62 185 105" stroke="#A78BFA" stroke-width="2" fill="none"/>
+          <circle cx="160" cy="62" r="18" stroke="#2DD4BF" stroke-width="1.2" fill="none"/>
+        </svg>`
+      },
+      {
+        id: "kardiologiya", name: "Kardiologiya Pulse", cat: "tibbiyot", bg: "#FFF5F5", textColor: "#2D1214", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <polyline points="115,65 138,65 146,35 156,95 166,50 174,65 195,65" stroke="#BE123C" stroke-width="2.5" fill="none"/>
+        </svg>`
+      },
+      {
+        id: "mckinsey", name: "Konsalting Slate", cat: "biznes", bg: "#0F172A", textColor: "#FFFFFF", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="132" y="20" width="54" height="85" stroke="#38BDF8" stroke-width="1.5"/>
+          <line x1="132" y1="55" x2="186" y2="55" stroke="#D97706" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: "zumrad_biznes", name: "Zumrad Kapital", cat: "biznes", bg: "#06372C", textColor: "#F2F7F5", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <polygon points="158,20 186,62 158,104 130,62" fill="rgba(212,175,55,0.22)" stroke="#D4AF37" stroke-width="1.8"/>
+        </svg>`
+      },
+      {
+        id: "buxoro_ipak", name: "Buxoro Atlas", cat: "kreativ", bg: "#4A1525", textColor: "#FAF3EB", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M136 125 L136 58 Q162 20 188 58 L188 125 Z" fill="#FAF3EB" stroke="#D97706" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: "skandinav", name: "Skandinav Qor", cat: "minimalist", bg: "#F8FAFC", textColor: "#0F172A", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="130" y="22" width="54" height="80" rx="12" fill="#E2E8F0"/>
+          <circle cx="157" cy="62" r="16" fill="#0EA5E9"/>
+        </svg>`
+      },
+      {
+        id: "slidesgo_master", name: "Slidesgo Master (.pptx)", cat: "akademik", bg: "#1E1B4B", textColor: "#FFFFFF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="126" y="22" width="60" height="80" rx="8" fill="#4338CA" stroke="#F59E0B" stroke-width="2"/>
+          <text x="137" y="67" fill="#FFFFFF" font-size="11" font-weight="bold">.PPTX</text>
+        </svg>`
+      },
       {
         id: "xarita", name: "Xarita", cat: "akademik", bg: "#F3EFE6", textColor: "#233123", font: "'Playfair Display', serif",
         svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
@@ -895,6 +959,7 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const initialMode = urlParams.get("mode") || "taqdimot";
+    const initialLang = urlParams.get("lang") || "uz_lat";
     const apiEndpoint = urlParams.get("api_url") || "";
 
     let state = {
@@ -909,13 +974,19 @@
       org: document.getElementById('orgInput').value,
       city: "Toshkent",
       year: "2026",
-      lang: "uz_lat",
+      lang: initialLang,
       count: 10,
       density: "muvozanatli",
       extra: "",
       templateId: "xarita",
       category: "all"
     };
+
+    const initialLangBtn = document.querySelector(`.lang-pill[data-lang="${initialLang}"]`);
+    if (initialLangBtn) {
+      document.querySelectorAll('.lang-pill').forEach(b => b.classList.remove('active'));
+      initialLangBtn.classList.add('active');
+    }
 
     function updateModeUI() {
       document.querySelectorAll('.mode-tab').forEach(t => {
@@ -946,7 +1017,7 @@
 
       if (state.mode === 'taqdimot') {
         templatesSection.classList.remove('hidden');
-        promoText.textContent = "Taqdimot: 24 ta shablon, mavzuga mos rasmlar · PDF + PPTX";
+        promoText.textContent = `Taqdimot: ${TEMPLATES.length} ta shablon, mavzuga mos rasmlar · PDF + PPTX`;
         counterLabel.textContent = "Slaydlar soni";
         counterHelper.textContent = "Titul, Kirish, Reja, Manbalar va yakun slaydi doim bo'ladi.";
         submitBtn.textContent = "Slayd tayyorlash · tekin";
@@ -1064,20 +1135,27 @@
       state.graphicType = btn.dataset.gtype;
     });
 
+    function updateTemplateLiveText() {
+      const liveTitle = (state.topic || "Parafinlar sintezi va xossalari").trim();
+      const liveMeta = `${state.author || "Muallif"} · ${state.org || "OTM"}`;
+      document.querySelectorAll('.tpl-live-title').forEach(el => { el.textContent = liveTitle; });
+      document.querySelectorAll('.tpl-live-meta').forEach(el => { el.textContent = liveMeta; });
+    }
+
     document.getElementById('topicInput').addEventListener('input', e => {
       state.topic = e.target.value;
-      renderTemplates();
+      updateTemplateLiveText();
     });
     document.getElementById('subjectInput').addEventListener('input', e => state.subject = e.target.value);
     document.getElementById('authorInput').addEventListener('input', e => {
       state.author = e.target.value;
-      renderTemplates();
+      updateTemplateLiveText();
     });
     document.getElementById('groupInput').addEventListener('input', e => state.group = e.target.value);
     document.getElementById('teacherInput').addEventListener('input', e => state.teacher = e.target.value);
     document.getElementById('orgInput').addEventListener('input', e => {
       state.org = e.target.value;
-      renderTemplates();
+      updateTemplateLiveText();
     });
     document.getElementById('cityInput').addEventListener('input', e => state.city = e.target.value);
     document.getElementById('yearInput').addEventListener('input', e => state.year = e.target.value);
@@ -1187,7 +1265,7 @@
           tg.sendData(JSON.stringify(payload));
           tg.close();
         } catch (e) {
-          alert("Buyurtma yuborildi!");
+          alert("Yuborishda xatolik: " + (e?.message || e));
         }
       } else {
         alert("Ma'lumot tayyor: " + JSON.stringify(payload, null, 2));
