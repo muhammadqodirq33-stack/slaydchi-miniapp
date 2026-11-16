@@ -362,6 +362,20 @@
     .tpl-item.selected .tpl-check {
       display: flex;
     }
+    .tpl-badge {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: rgba(15, 23, 42, 0.78);
+      color: #FFFFFF;
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      letter-spacing: 0.4px;
+      z-index: 4;
+      backdrop-filter: blur(2px);
+    }
     .tpl-art-layer {
       position: absolute;
       inset: 0;
@@ -642,18 +656,11 @@
     <!-- SHABLONLAR GALEREYASI -->
     <div class="templates-section" id="templatesSection">
       <div class="templates-header">
-        <h3>Shablonlar</h3>
-        <span class="templates-count" id="tplCountLabel">33 ta</span>
+        <h3 id="templatesTitle">Shablonlar</h3>
+        <span class="templates-count" id="tplCountLabel">0 ta</span>
       </div>
 
-      <div class="cat-tabs" id="catTabs">
-        <button type="button" class="cat-tab active" data-cat="all">Barchasi</button>
-        <button type="button" class="cat-tab" data-cat="akademik">Akademik</button>
-        <button type="button" class="cat-tab" data-cat="tibbiyot">Tibbiyot & Kimyo</button>
-        <button type="button" class="cat-tab" data-cat="biznes">Biznes</button>
-        <button type="button" class="cat-tab" data-cat="kreativ">Kreativ</button>
-        <button type="button" class="cat-tab" data-cat="minimalist">Minimalist</button>
-      </div>
+      <div class="cat-tabs" id="catTabs"></div>
 
       <div class="templates-grid" id="templatesGrid"></div>
     </div>
@@ -954,8 +961,449 @@
           <rect x="128" y="64" width="27" height="44" rx="8" fill="#181818"/>
           <rect x="159" y="64" width="27" height="44" rx="8" fill="#D96B43"/>
         </svg>`
+      },
+      // ==================== SLIDESGO & PRESENTATIONGO (.PPTX TAQDIMOTLAR) ====================
+      {
+        id: "michelangelo_art", name: "Mikelanjelo San'at", mode: "taqdimot", cat: "akademik", badge: "PPTX", bg: "#F8F5F0", textColor: "#2C2623", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="126" y="16" width="58" height="90" rx="6" fill="#E3DACE" stroke="#A8442A" stroke-width="1.8"/>
+          <circle cx="155" cy="52" r="18" fill="#D9A05B" opacity="0.75"/>
+        </svg>`
+      },
+      {
+        id: "ancient_history", name: "Qadimgi Tarix XL", mode: "taqdimot", cat: "akademik", badge: "PPTX", bg: "#F5F3EC", textColor: "#1F2937", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M132 110 L132 48 Q160 16 188 48 L188 110 Z" fill="#CAD2C5" stroke="#354F52" stroke-width="2"/>
+          <circle cx="160" cy="66" r="14" fill="#E07A5F"/>
+        </svg>`
+      },
+      {
+        id: "history_thesis", name: "Tarix Tezis & Tadqiqot", mode: "taqdimot", cat: "akademik", badge: "PPTX", bg: "#FAF8F5", textColor: "#1F2421", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="128" y="18" width="58" height="88" rx="6" fill="#DCE1DE" stroke="#284B63" stroke-width="1.8"/>
+          <line x1="138" y1="45" x2="176" y2="45" stroke="#B48327" stroke-width="2.5"/>
+          <line x1="138" y1="62" x2="176" y2="62" stroke="#284B63" stroke-width="1.5"/>
+        </svg>`
+      },
+      {
+        id: "neural_ai", name: "Neyron AI (PGo)", mode: "taqdimot", cat: "biznes", badge: "PPTX", bg: "#031226", textColor: "#F1F8FF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="145" cy="40" r="8" stroke="#00C8FF" stroke-width="2"/>
+          <circle cx="176" cy="65" r="10" stroke="#007BFF" stroke-width="2"/>
+          <circle cx="148" cy="92" r="7" stroke="#22F0FF" stroke-width="2"/>
+          <line x1="152" y1="44" x2="168" y2="59" stroke="#00C8FF" stroke-width="1.5"/>
+          <line x1="154" y1="88" x2="168" y2="71" stroke="#22F0FF" stroke-width="1.5"/>
+        </svg>`
+      },
+      {
+        id: "medical_pulse", name: "Tibbiyot Pulse (PGo)", mode: "taqdimot", cat: "tibbiyot", badge: "PPTX", bg: "#F7FCFD", textColor: "#173A4A", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="158" cy="62" r="32" fill="#EAF7F8" stroke="#3EC4CF" stroke-width="2"/>
+          <polyline points="130,62 146,62 152,44 160,82 167,54 173,62 186,62" stroke="#2C8FA3" stroke-width="2.2" fill="none"/>
+        </svg>`
+      },
+      {
+        id: "digital_health", name: "Raqamli Sog'liq (PGo)", mode: "taqdimot", cat: "tibbiyot", badge: "PPTX", bg: "#031B33", textColor: "#F4FBFF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="132" y="24" width="52" height="76" rx="10" stroke="#00C8FF" stroke-width="1.8" fill="#0A3B67"/>
+          <path d="M158 46 V78 M142 62 H174" stroke="#5BE7F2" stroke-width="4" stroke-linecap="round"/>
+        </svg>`
+      },
+      {
+        id: "genetic_blueprint", name: "Genetik Chizma (PGo)", mode: "taqdimot", cat: "tibbiyot", badge: "PPTX", bg: "#242852", textColor: "#F3F7FD", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M138 20 Q160 62 182 20 M138 105 Q160 62 182 105" stroke="#ACCBF9" stroke-width="2" fill="none"/>
+          <line x1="145" y1="42" x2="175" y2="42" stroke="#629DD1" stroke-width="1.5"/>
+          <line x1="145" y1="82" x2="175" y2="82" stroke="#629DD1" stroke-width="1.5"/>
+        </svg>`
+      },
+      {
+        id: "science_tech", name: "Ilm-fan & Tech (PGo)", mode: "taqdimot", cat: "tibbiyot", badge: "PPTX", bg: "#F2F7FA", textColor: "#252432", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="158" cy="62" r="24" stroke="#3494BA" stroke-width="2" stroke-dasharray="6 3"/>
+          <circle cx="158" cy="62" r="9" fill="#58B6C0"/>
+        </svg>`
+      },
+      {
+        id: "creative_school", name: "Maktab & Pedagogika", mode: "taqdimot", cat: "akademik", badge: "PPTX", bg: "#F4F8FA", textColor: "#1F3B4D", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="128" y="24" width="56" height="76" rx="10" fill="#CFE3EC" stroke="#1CADE4" stroke-width="2"/>
+          <circle cx="156" cy="52" r="14" fill="#42BA97"/>
+        </svg>`
+      },
+      {
+        id: "creative_spark", name: "Kreativ Uchqun (PGo)", mode: "taqdimot", cat: "kreativ", badge: "PPTX", bg: "#3A0E24", textColor: "#FFF7EE", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <polygon points="158,18 168,50 194,62 168,74 158,106 148,74 122,62 148,50" fill="#F5A623" opacity="0.85"/>
+        </svg>`
+      },
+      {
+        id: "dreamy_kawaii", name: "Dreamy Pastel (PGo)", mode: "taqdimot", cat: "kreativ", badge: "PPTX", bg: "#FFF9F4", textColor: "#4B3F78", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="148" cy="52" r="22" fill="#F7B7D8" opacity="0.7"/>
+          <circle cx="170" cy="72" r="20" fill="#C9A8F4" opacity="0.75"/>
+          <circle cx="154" cy="84" r="12" fill="#FFE68A"/>
+        </svg>`
+      },
+      {
+        id: "golden_leaves", name: "Oltin Barglar (PGo)", mode: "taqdimot", cat: "kreativ", badge: "PPTX", bg: "#FFF8EE", textColor: "#4B2618", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M135 95 Q150 30 186 24 Q178 82 135 95 Z" fill="#F28C18" opacity="0.8"/>
+          <path d="M126 104 Q158 70 184 86" stroke="#D94E1F" stroke-width="2" fill="none"/>
+        </svg>`
+      },
+      {
+        id: "navy_contours", name: "Navy Kontur (PGo)", mode: "taqdimot", cat: "biznes", badge: "PPTX", bg: "#081A2E", textColor: "#F5F1EA", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M120 125 Q155 60 200 85 L200 125 Z" fill="#102D4B"/>
+          <path d="M126 105 Q160 40 198 62" stroke="#C9A767" stroke-width="2" fill="none"/>
+        </svg>`
+      },
+      {
+        id: "mars_horizon", name: "Mars Ufqi (PGo)", mode: "taqdimot", cat: "kreativ", badge: "PPTX", bg: "#323232", textColor: "#FAF6F0", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="160" cy="54" r="24" fill="#D55816"/>
+          <path d="M112 96 Q160 72 200 96 L200 125 L112 125 Z" fill="#A5300F"/>
+        </svg>`
+      },
+      {
+        id: "digital_mind", name: "Raqamli Tafakkur", mode: "taqdimot", cat: "minimalist", badge: "PPTX", bg: "#F8FBFD", textColor: "#2F4454", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="158" cy="62" r="26" fill="#CFE3EF"/>
+          <circle cx="158" cy="62" r="14" stroke="#5F788A" stroke-width="2" fill="none"/>
+        </svg>`
+      },
+      {
+        id: "aerospace_horizon", name: "Aerokosmik Ufq (PGo)", mode: "taqdimot", cat: "biznes", badge: "PPTX", bg: "#0E2841", textColor: "#FFFFFF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <polygon points="130,92 184,32 164,96" fill="#156082"/>
+          <line x1="126" y1="98" x2="188" y2="36" stroke="#E97132" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: "british_wave", name: "Britaniya To'lqini", mode: "taqdimot", cat: "akademik", badge: "PPTX", bg: "#F3F5F8", textColor: "#0A1F4A", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M110 125 Q150 65 200 78 L200 125 Z" fill="#012169"/>
+          <path d="M118 112 Q156 54 200 66" stroke="#C8102E" stroke-width="3" fill="none"/>
+        </svg>`
+      },
+      {
+        id: "canadian_wave", name: "Kanada To'lqini", mode: "taqdimot", cat: "minimalist", badge: "PPTX", bg: "#F3F4F5", textColor: "#2C2C2C", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M122 125 Q158 55 200 72 L200 125 Z" fill="#E10600"/>
+        </svg>`
+      },
+      {
+        id: "australian_wave", name: "Okeaniya To'lqini", mode: "taqdimot", cat: "biznes", badge: "PPTX", bg: "#081E55", textColor: "#FFFFFF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <path d="M116 125 Q160 55 200 74 L200 125 Z" fill="#123B86"/>
+          <path d="M124 108 Q162 48 200 64" stroke="#E31C2B" stroke-width="2.5" fill="none"/>
+        </svg>`
+      },
+      // ==================== REFERAT / MUSTAQIL ISH SHABLONLARI ====================
+      {
+        id: "ref_akademik", name: "OTM Standart (Ko'k)", mode: "referat", cat: "akademik", badge: "DOCX+PDF", bg: "#FFFFFF", textColor: "#1B2A4A", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="8" y="8" width="184" height="109" stroke="#1B2A4A" stroke-width="2"/>
+          <rect x="134" y="24" width="44" height="76" fill="#EEF3FA" stroke="#1B2A4A" stroke-width="1"/>
+          <line x1="142" y1="42" x2="170" y2="42" stroke="#1B2A4A" stroke-width="2"/>
+          <line x1="142" y1="54" x2="170" y2="54" stroke="#2E8B57" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: "ref_rasmiy", name: "Davlat / Rasmiy (Yashil)", mode: "referat", cat: "akademik", badge: "DOCX+PDF", bg: "#F8FAFC", textColor: "#064E3B", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="0" y="0" width="200" height="7" fill="#065F46"/>
+          <rect x="8" y="8" width="184" height="109" stroke="#065F46" stroke-width="1.4"/>
+          <circle cx="158" cy="62" r="20" stroke="#B48327" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: "ref_editorial", name: "Ilmiy Jurnal (Bordo)", mode: "referat", cat: "jurnal", badge: "DOCX+PDF", bg: "#FAF7F2", textColor: "#5E1914", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="8" y="8" width="184" height="109" stroke="#7F1D1D" stroke-width="1.6"/>
+          <rect x="134" y="24" width="44" height="76" fill="#7F1D1D"/>
+          <line x1="142" y1="46" x2="170" y2="46" stroke="#B48327" stroke-width="2.5"/>
+        </svg>`
+      },
+      {
+        id: "ref_minimal", name: "Zamonaviy Minimalist", mode: "referat", cat: "minimal", badge: "DOCX+PDF", bg: "#FFFFFF", textColor: "#0F172A", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="130" y="18" width="52" height="88" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5"/>
+          <circle cx="156" cy="48" r="10" fill="#0284C7"/>
+        </svg>`
+      },
+      // ==================== TESTLAR SHABLONLARI ====================
+      {
+        id: "test_klassik", name: "Akademik Test (Ko'k)", mode: "test", cat: "akademik", badge: "PDF+DOCX", bg: "#EEF3FA", textColor: "#1B2A4A", font: "'Playfair Display', serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="130" y="20" width="54" height="84" rx="6" fill="#FFFFFF" stroke="#1B2A4A" stroke-width="1.5"/>
+          <circle cx="142" cy="42" r="4" fill="#2563EB"/><line x1="150" y1="42" x2="176" y2="42" stroke="#1B2A4A" stroke-width="2"/>
+          <circle cx="142" cy="60" r="4" stroke="#94A3B8" stroke-width="1.5"/><line x1="150" y1="60" x2="176" y2="60" stroke="#94A3B8" stroke-width="2"/>
+          <circle cx="142" cy="78" r="4" stroke="#94A3B8" stroke-width="1.5"/><line x1="150" y1="78" x2="176" y2="78" stroke="#94A3B8" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: "test_klinika", name: "Tibbiyot & Farmatsiya", mode: "test", cat: "tibbiyot", badge: "PDF+DOCX", bg: "#ECFDF5", textColor: "#0F292E", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="130" y="20" width="54" height="84" rx="8" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.5"/>
+          <path d="M144 48 L151 55 L168 38" stroke="#0F766E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="142" y1="74" x2="172" y2="74" stroke="#0284C7" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: "test_terminal", name: "IT & Texnik Nazorat", mode: "test", cat: "tech", badge: "PDF+DOCX", bg: "#0F172A", textColor: "#F8FAFC", font: "'JetBrains Mono', monospace",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="128" y="22" width="58" height="80" rx="6" fill="#1E293B" stroke="#0EA5E9" stroke-width="1.5"/>
+          <text x="140" y="54" fill="#38BDF8" font-size="14" font-weight="bold">[A]</text>
+          <text x="140" y="76" fill="#94A3B8" font-size="11" font-weight="bold">[B] [C]</text>
+        </svg>`
+      },
+      {
+        id: "test_kviz", name: "Kreativ Kviz (Oltin)", mode: "test", cat: "tech", badge: "PDF+DOCX", bg: "#FFF7ED", textColor: "#7C2D12", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="158" cy="62" r="28" fill="#D97706" opacity="0.22" stroke="#9A3412" stroke-width="2"/>
+          <text x="150" y="72" fill="#9A3412" font-size="28" font-weight="bold">?</text>
+        </svg>`
+      },
+      // ==================== KROSSVORD SHABLONLARI ====================
+      {
+        id: "cw_classic", name: "Klassik Katak To'r", mode: "krossvord", cat: "klassik", badge: "PDF+DOCX", bg: "#F7F5EE", textColor: "#1E291E", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="130" y="24" width="16" height="16" fill="#FFFFFF" stroke="#2C3E2C" stroke-width="1.5"/>
+          <rect x="146" y="24" width="16" height="16" fill="#E8F2E8" stroke="#2C3E2C" stroke-width="1.5"/>
+          <rect x="162" y="24" width="16" height="16" fill="#FFFFFF" stroke="#2C3E2C" stroke-width="1.5"/>
+          <rect x="146" y="40" width="16" height="16" fill="#FFFFFF" stroke="#2C3E2C" stroke-width="1.5"/>
+          <rect x="146" y="56" width="16" height="16" fill="#E8F2E8" stroke="#2C3E2C" stroke-width="1.5"/>
+          <rect x="130" y="56" width="16" height="16" fill="#FFFFFF" stroke="#2C3E2C" stroke-width="1.5"/>
+          <rect x="162" y="56" width="16" height="16" fill="#FFFFFF" stroke="#2C3E2C" stroke-width="1.5"/>
+        </svg>`
+      },
+      {
+        id: "cw_doodle_think", name: "Fikrlash Doodle (PGo)", mode: "krossvord", cat: "pptx", badge: "PPTX+PDF", bg: "#F0F7FF", textColor: "#1E293B", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="156" cy="54" r="20" fill="#BFDBFE" stroke="#2563EB" stroke-width="2"/>
+          <rect x="136" y="80" width="40" height="16" rx="4" fill="#F59E0B"/>
+        </svg>`
+      },
+      {
+        id: "cw_question_mark", name: "Savol Belgisi 3D (PGo)", mode: "krossvord", cat: "pptx", badge: "PPTX+PDF", bg: "#FEF9EF", textColor: "#292524", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="158" cy="62" r="26" fill="#FDE68A" stroke="#EA580C" stroke-width="2"/>
+          <text x="150" y="72" fill="#EA580C" font-size="26" font-weight="bold">?</text>
+        </svg>`
+      },
+      {
+        id: "cw_doodle_confused", name: "Boshqotirma Sticker", mode: "krossvord", cat: "pptx", badge: "PPTX+PDF", bg: "#F5F3FF", textColor: "#1E1B4B", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="132" y="26" width="52" height="72" rx="10" fill="#DDD6FE" stroke="#7C3AED" stroke-width="2"/>
+          <circle cx="158" cy="62" r="14" fill="#EC4899" opacity="0.8"/>
+        </svg>`
+      },
+      {
+        id: "cw_doodle_chat", name: "Dialog Krossvord", mode: "krossvord", cat: "pptx", badge: "PPTX+PDF", bg: "#ECFDF5", textColor: "#064E3B", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="128" y="28" width="44" height="32" rx="8" fill="#A7F3D0" stroke="#059669" stroke-width="2"/>
+          <rect x="142" y="68" width="44" height="30" rx="8" fill="#FDE68A" stroke="#D97706" stroke-width="2"/>
+        </svg>`
+      },
+      // ==================== INFOGRAFIKA: SWOT SHABLONLARI ====================
+      {
+        id: "swot_3d", name: "3D SWOT Analiz (Canva)", mode: "infografika", gtype: "swot", cat: "pptx", badge: "PPTX+PDF", bg: "#F0F0F0", textColor: "#222222", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="126" y="22" width="26" height="36" rx="4" fill="#2AB165"/>
+          <rect x="156" y="22" width="26" height="36" rx="4" fill="#F89248"/>
+          <rect x="126" y="64" width="26" height="36" rx="4" fill="#3799FF"/>
+          <rect x="156" y="64" width="26" height="36" rx="4" fill="#7F64F2"/>
+        </svg>`
+      },
+      {
+        id: "swot_deck", name: "SWOT 6-Slaydli Deck", mode: "infografika", gtype: "swot", cat: "pptx", badge: "PPTX+PDF", bg: "#1B2A4A", textColor: "#FFFFFF", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="128" y="20" width="56" height="84" rx="6" fill="#2563EB" opacity="0.35" stroke="#10B981" stroke-width="1.8"/>
+          <text x="136" y="68" fill="#FFFFFF" font-size="14" font-weight="bold">SWOT</text>
+        </svg>`
+      },
+      {
+        id: "swot_matrix", name: "SWOT Klassik Matritsa", mode: "infografika", gtype: "swot", cat: "pptx", badge: "PPTX+PDF", bg: "#F7F8FA", textColor: "#1E293B", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="126" y="22" width="56" height="78" rx="6" stroke="#0D9488" stroke-width="2" fill="#FFFFFF"/>
+          <line x1="154" y1="22" x2="154" y2="100" stroke="#CBD5E1" stroke-width="1.5"/>
+          <line x1="126" y1="61" x2="182" y2="61" stroke="#CBD5E1" stroke-width="1.5"/>
+        </svg>`
+      },
+      {
+        id: "swot_strategic", name: "Strategik SWOT 2x2", mode: "infografika", gtype: "swot", cat: "pptx", badge: "PPTX+PDF", bg: "#F8F6F2", textColor: "#1F2937", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="155" cy="62" r="28" stroke="#B45309" stroke-width="2" fill="#FFFFFF"/>
+          <line x1="155" y1="34" x2="155" y2="90" stroke="#1D4ED8" stroke-width="1.5"/>
+          <line x1="127" y1="62" x2="183" y2="62" stroke="#1D4ED8" stroke-width="1.5"/>
+        </svg>`
+      },
+      // ==================== INFOGRAFIKA: VENN SHABLONLARI ====================
+      {
+        id: "venn_classic", name: "Venn 3-Doira Diagramma", mode: "infografika", gtype: "venn", cat: "pptx", badge: "PPTX+PDF", bg: "#F4F6F9", textColor: "#1E293B", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="146" cy="52" r="20" stroke="#2563EB" stroke-width="2" fill="rgba(37,99,235,0.12)"/>
+          <circle cx="168" cy="52" r="20" stroke="#EA580C" stroke-width="2" fill="rgba(234,88,12,0.12)"/>
+          <circle cx="157" cy="74" r="20" stroke="#10B981" stroke-width="2" fill="rgba(16,185,129,0.12)"/>
+        </svg>`
+      },
+      {
+        id: "venn_comparison", name: "Venn 2-Doira Qiyosiy", mode: "infografika", gtype: "venn", cat: "pptx", badge: "PPTX+PDF", bg: "#F3F8F5", textColor: "#1B2E22", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="144" cy="62" r="24" stroke="#2D6A4F" stroke-width="2.2" fill="rgba(45,106,79,0.12)"/>
+          <circle cx="170" cy="62" r="24" stroke="#D97706" stroke-width="2.2" fill="rgba(217,119,6,0.12)"/>
+        </svg>`
+      },
+      {
+        id: "venn_hexagonal", name: "Venn Geksagonal Tuzilma", mode: "infografika", gtype: "venn", cat: "pptx", badge: "PPTX+PDF", bg: "#F5F3FF", textColor: "#1E1B4B", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <polygon points="150,30 172,42 172,66 150,78 128,66 128,42" stroke="#6D28D9" stroke-width="2" fill="rgba(109,40,217,0.1)"/>
+          <polygon points="164,48 186,60 186,84 164,96 142,84 142,60" stroke="#0EA5E9" stroke-width="2" fill="rgba(14,165,233,0.1)"/>
+        </svg>`
+      },
+      {
+        id: "venn_5circle", name: "Venn 5-Doirali Keng", mode: "infografika", gtype: "venn", cat: "pptx", badge: "PPTX+PDF", bg: "#FFF8F3", textColor: "#292524", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="157" cy="40" r="14" stroke="#C2410C" stroke-width="1.6"/>
+          <circle cx="138" cy="58" r="14" stroke="#0284C7" stroke-width="1.6"/>
+          <circle cx="176" cy="58" r="14" stroke="#16A34A" stroke-width="1.6"/>
+          <circle cx="145" cy="80" r="14" stroke="#9333EA" stroke-width="1.6"/>
+          <circle cx="169" cy="80" r="14" stroke="#D97706" stroke-width="1.6"/>
+        </svg>`
+      },
+      // ==================== INFOGRAFIKA: KLASTER SHABLONLARI ====================
+      {
+        id: "klaster_brain", name: "Miya & G'oyalar Klaster", mode: "infografika", gtype: "klaster", cat: "pptx", badge: "PPTX+PDF", bg: "#F4F8FB", textColor: "#0F172A", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="158" cy="62" r="16" fill="#0284C7"/>
+          <circle cx="130" cy="34" r="7" fill="#F59E0B"/><line x1="145" y1="50" x2="135" y2="39" stroke="#0284C7" stroke-width="1.5"/>
+          <circle cx="184" cy="36" r="7" fill="#F59E0B"/><line x1="170" y1="50" x2="179" y2="41" stroke="#0284C7" stroke-width="1.5"/>
+          <circle cx="132" cy="92" r="7" fill="#F59E0B"/><line x1="145" y1="74" x2="136" y2="86" stroke="#0284C7" stroke-width="1.5"/>
+          <circle cx="184" cy="90" r="7" fill="#F59E0B"/><line x1="170" y1="74" x2="179" y2="84" stroke="#0284C7" stroke-width="1.5"/>
+        </svg>`
+      },
+      {
+        id: "klaster_radial", name: "Radial Matritsa Klaster", mode: "infografika", gtype: "klaster", cat: "pptx", badge: "PPTX+PDF", bg: "#F6F5F0", textColor: "#1F2937", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="144" y="48" width="28" height="28" rx="6" fill="#0F766E"/>
+          <rect x="122" y="24" width="22" height="20" rx="4" stroke="#DC2626" stroke-width="1.5" fill="#FFFFFF"/>
+          <rect x="170" y="24" width="22" height="20" rx="4" stroke="#0F766E" stroke-width="1.5" fill="#FFFFFF"/>
+          <rect x="122" y="80" width="22" height="20" rx="4" stroke="#0F766E" stroke-width="1.5" fill="#FFFFFF"/>
+          <rect x="170" y="80" width="22" height="20" rx="4" stroke="#DC2626" stroke-width="1.5" fill="#FFFFFF"/>
+        </svg>`
+      },
+      {
+        id: "klaster_pillars", name: "4 Ustunli Klaster", mode: "infografika", gtype: "klaster", cat: "pptx", badge: "PPTX+PDF", bg: "#F8FAFC", textColor: "#0F172A", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="124" y="28" width="12" height="72" rx="3" fill="#334155"/>
+          <rect x="140" y="28" width="12" height="72" rx="3" fill="#E11D48"/>
+          <rect x="156" y="28" width="12" height="72" rx="3" fill="#0284C7"/>
+          <rect x="172" y="28" width="12" height="72" rx="3" fill="#10B981"/>
+        </svg>`
+      },
+      {
+        id: "klaster_cube", name: "Minimalist Kub Klaster", mode: "infografika", gtype: "klaster", cat: "pptx", badge: "PPTX+PDF", bg: "#F5F5F4", textColor: "#18181B", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <polygon points="158,24 184,38 184,74 158,88 132,74 132,38" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+          <line x1="158" y1="56" x2="158" y2="88" stroke="#F97316" stroke-width="1.8"/>
+          <line x1="158" y1="56" x2="132" y2="38" stroke="#2563EB" stroke-width="1.8"/>
+          <line x1="158" y1="56" x2="184" y2="38" stroke="#2563EB" stroke-width="1.8"/>
+        </svg>`
+      },
+      {
+        id: "klaster_classic", name: "Klassik Klaster (PDF)", mode: "infografika", gtype: "klaster", cat: "pdf", badge: "A4 PDF", bg: "#F4F1EA", textColor: "#222B22", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="142" y="50" width="32" height="24" rx="6" fill="#3E563E"/>
+          <circle cx="132" cy="30" r="8" stroke="#C85A32" stroke-width="1.5" fill="#FFFFFF"/>
+          <circle cx="182" cy="30" r="8" stroke="#3E563E" stroke-width="1.5" fill="#FFFFFF"/>
+          <circle cx="132" cy="94" r="8" stroke="#3E563E" stroke-width="1.5" fill="#FFFFFF"/>
+          <circle cx="182" cy="94" r="8" stroke="#C85A32" stroke-width="1.5" fill="#FFFFFF"/>
+        </svg>`
+      },
+      // ==================== INFOGRAFIKA: BALIQ / JARAYON SHABLONLARI ====================
+      {
+        id: "baliq_classic", name: "Anatomik Baliq Skeleti", mode: "infografika", gtype: "baliq", cat: "pdf", badge: "A4 PDF", bg: "#F4F1EA", textColor: "#222B22", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <line x1="120" y1="62" x2="176" y2="62" stroke="#222B22" stroke-width="2.5"/>
+          <polygon points="120,62 108,46 114,62 108,78" fill="#3E563E"/>
+          <circle cx="180" cy="62" r="12" fill="#C85A32"/>
+          <line x1="142" y1="62" x2="132" y2="38" stroke="#3E563E" stroke-width="2"/>
+          <line x1="160" y1="62" x2="150" y2="86" stroke="#C85A32" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: "baliq_zigzag", name: "Zigzag Sabab-Oqibat", mode: "infografika", gtype: "baliq", cat: "pptx", badge: "PPTX+PDF", bg: "#F3F6FA", textColor: "#1E293B", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <polyline points="122,82 140,42 158,82 176,42 190,68" stroke="#1D4ED8" stroke-width="2.5" fill="none"/>
+          <circle cx="140" cy="42" r="5" fill="#EA580C"/>
+          <circle cx="158" cy="82" r="5" fill="#1D4ED8"/>
+          <circle cx="176" cy="42" r="5" fill="#EA580C"/>
+        </svg>`
+      },
+      {
+        id: "baliq_workflow", name: "Bog'langan Oqim (PGo)", mode: "infografika", gtype: "baliq", cat: "pptx", badge: "PPTX+PDF", bg: "#F2F8F6", textColor: "#0F292E", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="122" y="52" width="18" height="22" rx="4" fill="#0F766E"/>
+          <rect x="148" y="34" width="18" height="22" rx="4" fill="#E36414"/>
+          <rect x="172" y="52" width="18" height="22" rx="4" fill="#0F766E"/>
+          <line x1="140" y1="58" x2="148" y2="48" stroke="#0F292E" stroke-width="1.5"/>
+          <line x1="166" y1="48" x2="172" y2="58" stroke="#0F292E" stroke-width="1.5"/>
+        </svg>`
+      },
+      {
+        id: "baliq_swimlane", name: "Yo'lakli Tahlil (PGo)", mode: "infografika", gtype: "baliq", cat: "pptx", badge: "PPTX+PDF", bg: "#F8FAFC", textColor: "#0F172A", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <rect x="122" y="30" width="66" height="16" rx="4" fill="#E0E7FF" stroke="#4338CA" stroke-width="1.2"/>
+          <rect x="122" y="54" width="66" height="16" rx="4" fill="#D1FAE5" stroke="#059669" stroke-width="1.2"/>
+          <rect x="122" y="78" width="66" height="16" rx="4" fill="#E0E7FF" stroke="#4338CA" stroke-width="1.2"/>
+        </svg>`
+      },
+      {
+        id: "baliq_circle", name: "Doiraviy Bosqichlar", mode: "infografika", gtype: "baliq", cat: "pptx", badge: "PPTX+PDF", bg: "#FAF5F0", textColor: "#292524", font: "'Inter', sans-serif",
+        svg: `<svg width="100%" height="100%" viewBox="0 0 200 125" fill="none">
+          <circle cx="158" cy="62" r="26" stroke="#B45309" stroke-width="2" stroke-dasharray="10 4"/>
+          <circle cx="158" cy="36" r="6" fill="#0D9488"/>
+          <circle cx="184" cy="62" r="6" fill="#B45309"/>
+          <circle cx="158" cy="88" r="6" fill="#0D9488"/>
+          <circle cx="132" cy="62" r="6" fill="#B45309"/>
+        </svg>`
       }
     ];
+
+    const MODE_CATEGORIES = {
+      taqdimot: [
+        { id: "all", label: "Barchasi" },
+        { id: "akademik", label: "Akademik" },
+        { id: "tibbiyot", label: "Tibbiyot & Kimyo" },
+        { id: "biznes", label: "Biznes" },
+        { id: "kreativ", label: "Kreativ" },
+        { id: "minimalist", label: "Minimalist" }
+      ],
+      referat: [
+        { id: "all", label: "Barchasi" },
+        { id: "akademik", label: "OTM Standart" },
+        { id: "jurnal", label: "Ilmiy Jurnal" },
+        { id: "minimal", label: "Minimalist" }
+      ],
+      test: [
+        { id: "all", label: "Barchasi" },
+        { id: "akademik", label: "Akademik" },
+        { id: "tibbiyot", label: "Tibbiyot" },
+        { id: "tech", label: "IT & Kreativ" }
+      ],
+      krossvord: [
+        { id: "all", label: "Barchasi" },
+        { id: "klassik", label: "Klassik (PDF+Word)" },
+        { id: "pptx", label: "O'yin & Doodle (.pptx)" }
+      ],
+      infografika: [
+        { id: "all", label: "Barchasi" },
+        { id: "pptx", label: "PowerPoint (.pptx)" },
+        { id: "pdf", label: "A4 Plakat (PDF)" }
+      ]
+    };
 
     const urlParams = new URLSearchParams(window.location.search);
     const initialMode = urlParams.get("mode") || "taqdimot";
@@ -979,8 +1427,55 @@
       density: "muvozanatli",
       extra: "",
       templateId: "xarita",
-      category: "all"
+      category: "all",
+      selectedByKey: {
+        "taqdimot": "xarita",
+        "referat": "ref_akademik",
+        "test": "test_klassik",
+        "krossvord": "cw_classic",
+        "infografika:klaster": "klaster_brain",
+        "infografika:baliq": "baliq_classic",
+        "infografika:venn": "venn_classic",
+        "infografika:swot": "swot_3d"
+      }
     };
+
+    function getSelectionKey() {
+      return state.mode === "infografika"
+        ? `infografika:${state.graphicType}`
+        : state.mode;
+    }
+
+    function getTemplatesForCurrentMode() {
+      return TEMPLATES.filter(t => {
+        const tMode = t.mode || "taqdimot";
+        if (tMode !== state.mode) return false;
+        if (state.mode === "infografika" && t.gtype !== state.graphicType) return false;
+        return true;
+      });
+    }
+
+    function syncSelectedTemplate() {
+      const pool = getTemplatesForCurrentMode();
+      const sKey = getSelectionKey();
+      const remembered = state.selectedByKey[sKey];
+      const match = pool.find(t => t.id === remembered) || pool[0];
+      if (match) {
+        state.templateId = match.id;
+        state.selectedByKey[sKey] = match.id;
+      }
+    }
+
+    function renderCategoryTabs() {
+      const wrap = document.getElementById('catTabs');
+      const cats = MODE_CATEGORIES[state.mode] || MODE_CATEGORIES.taqdimot;
+      if (!cats.some(c => c.id === state.category)) {
+        state.category = "all";
+      }
+      wrap.innerHTML = cats.map(c =>
+        `<button type="button" class="cat-tab ${state.category === c.id ? 'active' : ''}" data-cat="${c.id}">${c.label}</button>`
+      ).join('');
+    }
 
     const initialLangBtn = document.querySelector(`.lang-pill[data-lang="${initialLang}"]`);
     if (initialLangBtn) {
@@ -999,6 +1494,7 @@
       const teacherGroup = document.getElementById('teacherGroup');
       const counterGroup = document.getElementById('counterGroup');
       const templatesSection = document.getElementById('templatesSection');
+      const templatesTitle = document.getElementById('templatesTitle');
       const densityGroup = document.getElementById('densityGroup');
 
       const promoText = document.getElementById('promoText');
@@ -1012,12 +1508,16 @@
       subjectGroup.classList.add('hidden');
       teacherGroup.classList.add('hidden');
       counterGroup.classList.remove('hidden');
-      templatesSection.classList.add('hidden');
+      templatesSection.classList.remove('hidden');
       densityGroup.classList.remove('hidden');
 
+      state.category = "all";
+      syncSelectedTemplate();
+      const poolCount = getTemplatesForCurrentMode().length;
+
       if (state.mode === 'taqdimot') {
-        templatesSection.classList.remove('hidden');
-        promoText.textContent = `Taqdimot: ${TEMPLATES.length} ta shablon, mavzuga mos rasmlar · PDF + PPTX`;
+        templatesTitle.textContent = "Taqdimot shablonlari";
+        promoText.textContent = `Taqdimot: ${poolCount} ta shablon (Slidesgo & PGo .pptx), rasmlar · PDF + PPTX`;
         counterLabel.textContent = "Slaydlar soni";
         counterHelper.textContent = "Titul, Kirish, Reja, Manbalar va yakun slaydi doim bo'ladi.";
         submitBtn.textContent = "Slayd tayyorlash · tekin";
@@ -1027,7 +1527,8 @@
         docTypeGroup.classList.remove('hidden');
         subjectGroup.classList.remove('hidden');
         teacherGroup.classList.remove('hidden');
-        promoText.textContent = `${state.docType} — OTM standarti bo'yicha Titul, Reja, Kirish, Xulosa va Adabiyotlar bilan (Word + PDF)`;
+        templatesTitle.textContent = `${state.docType} dizaynlari`;
+        promoText.textContent = `${state.docType} — ${poolCount} xil akademik dizayn (Word + PDF)`;
         counterLabel.textContent = "Sahifalar (betlar) soni";
         counterHelper.textContent = "Titul beti, Mundarija (Reja), Kirish, Asosiy boblar, Xulosa va Manbalar kiritiladi.";
         submitBtn.textContent = `${state.docType} tayyorlash (Word + PDF)`;
@@ -1035,7 +1536,8 @@
         if (state.count < 5 || state.count > 35) state.count = 12;
       } else if (state.mode === 'test') {
         subjectGroup.classList.remove('hidden');
-        promoText.textContent = "Testlar to'plami — 4 variantli (A, B, C, D) savollar va oxirida javoblar kaliti bilan (Word + PDF)";
+        templatesTitle.textContent = "Test varag'i shablonlari";
+        promoText.textContent = `Testlar to'plami — ${poolCount} xil uslub, 4 variant (A, B, C, D) va kalit (Word + PDF)`;
         counterLabel.textContent = "Test savollari soni";
         counterHelper.textContent = "Har bir savol 4 ta variant va oxirgi betda to'g'ri javoblar kaliti bilan tuziladi.";
         submitBtn.textContent = "Testlar to'plamini tayyorlash (Word + PDF)";
@@ -1044,7 +1546,8 @@
       } else if (state.mode === 'krossvord') {
         subjectGroup.classList.remove('hidden');
         densityGroup.classList.add('hidden');
-        promoText.textContent = "Krossvord — Katakchali bo'sh to'r + Javoblari to'ldirilgan kalit varag'i (PDF + Word)";
+        templatesTitle.textContent = "Krossvord shablonlari";
+        promoText.textContent = `Krossvord — ${poolCount} ta dizayn: bo'sh to'r + javoblar kaliti (PDF + Word + PPTX)`;
         counterLabel.textContent = "Krossvord so'zlari soni";
         counterHelper.textContent = "1-betda yechish uchun bo'sh katakchali krossvord, 2-betda to'ldirilgan javoblar chiqadi.";
         submitBtn.textContent = "Krossvord tayyorlash (PDF + Word)";
@@ -1055,10 +1558,19 @@
         subjectGroup.classList.remove('hidden');
         counterGroup.classList.add('hidden');
         densityGroup.classList.add('hidden');
-        promoText.textContent = "Pedagogik grafik organayzerlar (Klaster, Baliq skeleti, Venn diagrammasi, SWOT) — tayyor A4 PDF plakat!";
-        submitBtn.textContent = "Grafik organayzer tayyorlash (PDF)";
-        extraInput.placeholder = "Masalan: Markaziy tushuncha va 6 ta tarmoq aniq misollar bilan yozilsin";
+        const gNames = {
+          klaster: "Klaster shablonlari",
+          baliq: "Baliq skeleti / Oqim shablonlari",
+          venn: "Venn diagrammasi shablonlari",
+          swot: "SWOT tahlil shablonlari"
+        };
+        templatesTitle.textContent = gNames[state.graphicType] || "Grafik shablonlari";
+        promoText.textContent = `${gNames[state.graphicType] || "Grafik"}: ${poolCount} ta shablon · A4 PDF + tahrirlanadigan .PPTX`;
+        submitBtn.textContent = "Grafik organayzer tayyorlash";
+        extraInput.placeholder = "Masalan: Markaziy tushuncha va tarmoqlar aniq misollar bilan yozilsin";
       }
+      renderCategoryTabs();
+      renderTemplates();
       updateCounterText();
     }
 
@@ -1076,16 +1588,19 @@
       const liveTitle = (state.topic || "Parafinlar sintezi va xossalari").trim();
       const liveMeta = `${state.author || "Muallif"} · ${state.org || "OTM"}`;
 
-      const filtered = TEMPLATES.filter(t => state.category === 'all' || t.cat === state.category);
+      const modePool = getTemplatesForCurrentMode();
+      const filtered = modePool.filter(t => state.category === 'all' || t.cat === state.category);
       document.getElementById('tplCountLabel').textContent = `${filtered.length} ta`;
 
       grid.innerHTML = filtered.map(t => {
         const isSelected = t.id === state.templateId;
         const txtCol = t.customTextColor || t.textColor;
+        const badgeHtml = t.badge ? `<span class="tpl-badge">${t.badge}</span>` : '';
         return `
           <div class="tpl-item ${isSelected ? 'selected' : ''}" data-id="${t.id}">
             <div class="tpl-preview" style="background: ${t.bg};">
               <div class="tpl-check">✓</div>
+              ${badgeHtml}
               <div class="tpl-art-layer">${t.svg}</div>
               <div class="tpl-content-layer" style="color: ${txtCol}; font-family: ${t.font};">
                 <div class="tpl-live-title">${escapeHtml(liveTitle)}</div>
@@ -1100,6 +1615,7 @@
       grid.querySelectorAll('.tpl-item').forEach(card => {
         card.addEventListener('click', () => {
           state.templateId = card.dataset.id;
+          state.selectedByKey[getSelectionKey()] = card.dataset.id;
           renderTemplates();
         });
       });
@@ -1133,6 +1649,7 @@
       document.querySelectorAll('.graphic-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.graphicType = btn.dataset.gtype;
+      updateModeUI();
     });
 
     function updateTemplateLiveText() {
