@@ -746,7 +746,7 @@
         performance: "Semestr baholari", resourcesTasks: "Resurslar va topshiriqlar",
         contract: "Kontrakt", stipend: "Stipendiya", subsidy: "Ijara subsidiyasi",
         dorm: "Yotoqxona", creditMod: "Kredit-modul", rent: "Ijara",
-        clearance: "Ketish varaqasi", appeals: "Apellyatsiyalar", oneidServices: "Markaziy OneID xizmatlari",
+        clearance: "Ketish varaqasi", appeals: "Apellyatsiyalar", documents: "Hujjatlar", references: "Ma'lumotnomalar", decrees: "Buyruqlar", oneidServices: "Markaziy OneID xizmatlari",
         oneidHint: "Ushbu bo'limlar markaziy my.hemis.uz (OneID / EduIMZO) portalida ishlaydi:",
         openOfficial: "my.hemis.uz da ochish",
         notifTitle: "Telegram bildirishnomalar & hisobotlar",
@@ -774,7 +774,7 @@
         performance: "Оценки за семестр", resourcesTasks: "Ресурсы и задания",
         contract: "Контракт", stipend: "Стипендия", subsidy: "Субсидия аренды",
         dorm: "Общежитие", creditMod: "Кредит-модуль", rent: "Аренда",
-        clearance: "Обходной лист", appeals: "Апелляции", oneidServices: "Центральные сервисы OneID",
+        clearance: "Обходной лист", appeals: "Апелляции", documents: "Документы", references: "Справки", decrees: "Приказы", oneidServices: "Центральные сервисы OneID",
         oneidHint: "Эти разделы работают на центральном портале my.hemis.uz (OneID / EduIMZO):",
         openOfficial: "Открыть в my.hemis.uz",
         notifTitle: "Telegram уведомления и отчёты",
@@ -802,7 +802,7 @@
         performance: "Semester Grades", resourcesTasks: "Resources & Tasks",
         contract: "Contract", stipend: "Stipend", subsidy: "Rent Subsidy",
         dorm: "Dormitory", creditMod: "Credit Module", rent: "Rent Info",
-        clearance: "Clearance Sheet", appeals: "Appeals", oneidServices: "Central OneID Services",
+        clearance: "Clearance Sheet", appeals: "Appeals", documents: "Documents", references: "References", decrees: "Decrees", oneidServices: "Central OneID Services",
         oneidHint: "These sections open on the official my.hemis.uz portal (OneID / EduIMZO):",
         openOfficial: "Open on my.hemis.uz",
         notifTitle: "Telegram Alerts & Reports",
@@ -821,10 +821,12 @@
       page: 'dashboard',
       authenticated: false,
       liveApi: false,
+      apiError: '',
       loading: false,
       profile: null,
       radar: {},
       schedule: {},
+      scheduleWeeks: [],
       attendance: { report: [], recent: [] },
       dailyGrades: [],
       dailySemester: '',
@@ -834,6 +836,7 @@
       exams: [],
       eduplan: { gpa_list: [], semesters: {}, semester_meta: [] },
       services: { clearance: [], appeals: { eligible: [], appeals: [] } },
+      documents: { documents: [], references: [], decrees: [] },
       subjectDetail: { resources: [], tasks: [] },
       libraryItems: [],
       settings: {
@@ -844,12 +847,14 @@
       },
       ui: {
         day: (new Date().getDay() === 0 ? 1 : new Date().getDay()),
+        selectedWeekId: '',
         attTab: 'subject',
         subjTab: 'daily',
+        subjFilter: '',
         dailyMode: 'recent',
         selectedSem: '',
         payTab: 'contract',
-        srvTab: 'clearance',
+        srvTab: 'documents',
         libQuery: '',
         showLoginModal: false
       }
@@ -943,6 +948,11 @@
       state.profile = data.profile || null;
       state.radar = data.radar || {};
       state.schedule = data.schedule || {};
+      state.scheduleWeeks = data.schedule_weeks || [];
+      if (state.scheduleWeeks.length && !state.ui.selectedWeekId) {
+        const cur = state.scheduleWeeks.find(w => w.current) || state.scheduleWeeks[state.scheduleWeeks.length - 1];
+        if (cur) state.ui.selectedWeekId = cur.id;
+      }
       state.attendance = data.attendance || { report: [], recent: [] };
       state.dailyGrades = data.daily_grades || [];
       state.dailySemester = data.daily_semester || '';
@@ -952,6 +962,7 @@
       state.exams = data.exams || [];
       state.eduplan = data.eduplan || { gpa_list: [], semesters: {}, semester_meta: [] };
       state.services = data.services || { clearance: [], appeals: { eligible: [], appeals: [] } };
+      state.documents = data.documents || { documents: [], references: [], decrees: [] };
       if (data.settings) {
         state.settings = { ...state.settings, ...data.settings };
         if (data.settings.language) state.lang = data.settings.language;
@@ -1020,8 +1031,11 @@
       if (state.liveApi && state.authenticated) {
         if (page === 'exams' && !state.exams.length) loadSection('exams');
         if (page === 'eduplan' && !(state.eduplan.gpa_list || []).length) loadSection('eduplan');
-        if (page === 'services' && !(state.services.clearance || []).length) loadSection('services');
-        if (page === 'subjects' && !(state.subjectDetail.tasks || []).length) loadSection('subject_detail');
+        if (page === 'services') {
+          if (!(state.services.clearance || []).length) loadSection('services');
+          if (!(state.documents.documents || []).length && !(state.documents.references || []).length) loadSection('documents');
+        }
+        if (page === 'subjects' && !(state.subjectDetail.resources || []).length) loadSection('subject_detail');
         if (page === 'library' && !state.libraryItems.length) loadLibrary('');
       }
     }
@@ -1032,10 +1046,13 @@
         if (name === 'exams') state.exams = data.exams || [];
         if (name === 'eduplan') state.eduplan = data;
         if (name === 'services') state.services = data;
+        if (name === 'documents') state.documents = data;
         if (name === 'subject_detail') state.subjectDetail = data;
         if (name === 'payment') state.finance = { ...state.finance, ...data };
         render();
-      } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'Ma\'lumot yuklashda xatolik');
+      }
     }
 
     async function loadLibrary(q) {
@@ -1055,12 +1072,16 @@
       if (API_BASE) {
         try {
           const data = await apiCall('/api/bootstrap?force=1');
+          state.apiError = '';
           applyBootstrapPayload(data);
           showToast('Ma\'lumotlar yangilandi');
           render();
           btn.classList.remove('spinning');
           return;
-        } catch (e) {}
+        } catch (e) {
+          state.apiError = e.message || 'API ulanmadi';
+          showToast('Jonli serverga ulanib bo\'lmadi: ' + state.apiError);
+        }
       }
       btn.classList.remove('spinning');
       sendToBot({ action: 'refresh' });
@@ -1387,17 +1408,20 @@
         <div class="stack">
           ${!state.liveApi ? `
             <div class="offline-bar">
-              <span>⚡ ${esc(t('snapshotMode'))}</span>
+              <span>⚡ ${esc(state.apiError ? t('snapshotMode') + ' — ' + state.apiError : t('snapshotMode'))}</span>
               <button class="btn btn-sm btn-ghost" onclick="forceRefresh()">${esc('Yangilash')}</button>
             </div>` : ''}
 
           <div class="hero-card">
             <div class="hero-top">
-              <div>
-                <div class="hero-name">${esc(p.full_name || 'Talaba')}</div>
-                <div class="hero-meta">${esc(p.university || '')}${p.faculty ? ' • ' + esc(p.faculty) : ''}</div>
+              <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+                ${p.image ? `<img src="${esc(p.image)}" alt="" style="width:48px;height:48px;border-radius:12px;object-fit:cover;border:2px solid rgba(255,255,255,0.35);flex-shrink:0;" onerror="this.style.display='none'" />` : ''}
+                <div style="min-width:0;">
+                  <div class="hero-name">${esc(p.full_name || 'Talaba')}</div>
+                  <div class="hero-meta">${esc(p.university || '')}${p.faculty ? ' • ' + esc(p.faculty) : ''}</div>
+                </div>
               </div>
-              <span class="hero-pill">GPA ${esc(gpa)}</span>
+              <span class="hero-pill" style="flex-shrink:0;">GPA ${esc(gpa)}</span>
             </div>
             <div class="hero-badges">
               ${p.group ? `<span class="hero-pill">👥 ${esc(p.group)}</span>` : ''}
@@ -1490,9 +1514,20 @@
     function renderTimetable() {
       const days = [1, 2, 3, 4, 5, 6];
       const curDay = state.ui.day;
-      const lessons = state.schedule[curDay] || state.schedule[String(curDay)] || [];
+      const weeks = state.scheduleWeeks || [];
+      const activeWeek = weeks.find(w => w.id === state.ui.selectedWeekId) || weeks.find(w => w.current) || null;
+      const schedMap = activeWeek ? (activeWeek.schedule || {}) : (state.schedule || {});
+      const lessons = schedMap[curDay] || schedMap[String(curDay)] || [];
       return `
         <div class="stack">
+          ${weeks.length > 1 ? `
+            <div class="card" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <span style="font-size:12.5px;font-weight:700;color:var(--text-secondary);">Hafta:</span>
+              <select class="input" style="height:36px;max-width:260px;" onchange="state.ui.selectedWeekId=this.value;render();">
+                ${weeks.map(w => `<option value="${esc(w.id)}" ${activeWeek && activeWeek.id === w.id ? 'selected' : ''}>${esc(w.label)}${w.current ? ' (Joriy)' : ''}</option>`).join('')}
+              </select>
+            </div>
+          ` : ''}
           <div class="tabs">
             ${days.map(d => `
               <button class="tab-btn ${curDay === d ? 'active' : ''}" onclick="state.ui.day=${d};render();">
@@ -1532,8 +1567,18 @@
       const tab = state.ui.attTab;
       const rep = state.attendance.report || [];
       const rec = state.attendance.recent || [];
+      const totalMissed = rep.reduce((s, r) => s + (Number(r.total_missed) || 0), 0);
+      const totalExc = rep.reduce((s, r) => s + (Number(r.excused) || 0), 0);
+      const totalUnexc = rep.reduce((s, r) => s + (Number(r.unexcused) || 0), 0);
+      const warnCount = rep.filter(r => r.percent !== null && r.percent >= 12).length;
       return `
         <div class="stack">
+          <div class="grid-4">
+            <div class="kpi-card"><div class="kpi-label"><span>Jami qoldirilgan</span></div><div class="kpi-val">${totalMissed} s</div><div class="kpi-sub">Semestr bo'yicha</div></div>
+            <div class="kpi-card"><div class="kpi-label"><span>Sababsiz</span></div><div class="kpi-val" style="color:${totalUnexc ? 'var(--danger)' : 'var(--success)'};">${totalUnexc} s</div><div class="kpi-sub">Sababli: ${totalExc} s</div></div>
+            <div class="kpi-card"><div class="kpi-label"><span>Xavf ostida (≥12%)</span></div><div class="kpi-val" style="color:${warnCount ? 'var(--warning)' : 'var(--success)'};">${warnCount}</div><div class="kpi-sub">${rep.length} ta fandan</div></div>
+            <div class="kpi-card"><div class="kpi-label"><span>Chegara</span></div><div class="kpi-val">25%</div><div class="kpi-sub">Ogohlantirish: ${esc(state.settings.alert_threshold || 15)}%</div></div>
+          </div>
           <div class="tabs">
             <button class="tab-btn ${tab === 'subject' ? 'active' : ''}" onclick="state.ui.attTab='subject';render();">${esc(t('bySubject'))}</button>
             <button class="tab-btn ${tab === 'recent' ? 'active' : ''}" onclick="state.ui.attTab='recent';render();">${esc(t('detailsLog'))}</button>
@@ -1550,7 +1595,7 @@
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;">
                       <div>
                         <div style="font-weight:700;font-size:14px;">${esc(r.subject)}</div>
-                        <div style="font-size:12px;color:var(--text-secondary);">Yuklama: ${esc(r.total_hours)} s • Sababli: ${esc(r.excused)} s • Sababsiz: ${esc(r.unexcused)} s</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">Auditoriya soati: ${esc(r.total_hours)} s • Sababli: ${esc(r.excused)} s • Sababsiz: ${esc(r.unexcused)} s</div>
                       </div>
                       <span class="pill" style="background:color-mix(in srgb, ${col} 14%, transparent);color:${col};font-weight:700;">
                         ${r.percent === null ? '?' : esc(r.percent) + '%'} (${esc(r.total_missed)} s)
@@ -1569,15 +1614,21 @@
             </div>
           ` : tab === 'recent' ? `
             <div class="card">
-              ${rec.length ? rec.map(x => `
+              ${rec.length ? rec.map(x => {
+                const isExc = x.excused === 'Ha';
+                const isPart = String(x.excused || '').startsWith('Qisman');
+                const pillCls = isExc ? 'pill-success' : (isPart ? 'pill-warning' : 'pill-danger');
+                const pillLbl = isExc ? 'Sababli' : (isPart ? esc(x.excused) : 'Sababsiz');
+                return `
                 <div class="row-item">
                   <div>
                     <div style="font-weight:700;">${esc(x.subject)}</div>
                     <div style="font-size:12px;color:var(--text-secondary);">${esc(x.date)} • ${esc(x.type)} • ${esc(x.teacher || '')}</div>
                   </div>
-                  <span class="pill ${x.excused === 'Ha' ? 'pill-success' : 'pill-danger'}">${esc(x.hours)} s • ${x.excused === 'Ha' ? 'Sababli' : 'Sababsiz'}</span>
+                  <span class="pill ${pillCls}">${esc(x.hours)} s • ${pillLbl}</span>
                 </div>
-              `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`}
+              `;
+              }).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`}
             </div>
           ` : `
             <div class="card" style="max-width:460px;">
@@ -1666,9 +1717,22 @@
           </div>
         `;
       } else {
-        const tasks = state.subjectDetail.tasks || [];
-        const resources = state.subjectDetail.resources || [];
+        const allTasks = state.subjectDetail.tasks || [];
+        const allResources = state.subjectDetail.resources || [];
+        const subjNames = Array.from(new Set([...allTasks.map(x => x.subject), ...allResources.map(x => x.subject)].filter(Boolean)));
+        const sf = state.ui.subjFilter || '';
+        const tasks = sf ? allTasks.filter(x => x.subject === sf) : allTasks;
+        const resources = sf ? allResources.filter(x => x.subject === sf) : allResources;
         body = `
+          ${subjNames.length ? `
+            <div class="card" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+              <span style="font-size:12.5px;font-weight:700;color:var(--text-secondary);">Fan bo'yicha filter:</span>
+              <select class="input" style="height:36px;max-width:280px;" onchange="state.ui.subjFilter=this.value;render();">
+                <option value="">Barcha fanlar (${allResources.length})</option>
+                ${subjNames.map(n => `<option value="${esc(n)}" ${sf === n ? 'selected' : ''}>${esc(n)}</option>`).join('')}
+              </select>
+            </div>
+          ` : ''}
           <div class="grid-2">
             <div class="card">
               <div class="card-title"><span>Topshiriqlar</span><span class="pill pill-brand">${tasks.length}</span></div>
@@ -1684,15 +1748,15 @@
             </div>
             <div class="card">
               <div class="card-title"><span>O'quv resurslari</span><span class="pill pill-violet">${resources.length}</span></div>
-              ${resources.length ? resources.map(rs => `
+              ${resources.slice(0, 60).map(rs => `
                 <div class="row-item" style="align-items:flex-start;">
-                  <div>
+                  <div style="min-width:0;">
                     <div style="font-weight:700;">${esc(rs.name)}</div>
-                    <div style="font-size:12px;color:var(--text-secondary);">${esc(rs.subject)} • ${esc(rs.training_type)}</div>
+                    <div style="font-size:12px;color:var(--text-secondary);">${esc(rs.subject)} • ${esc(rs.training_type)}${rs.teacher ? ' • ' + esc(rs.teacher) : ''}</div>
                     ${(rs.files || []).map(f => `<div style="margin-top:4px;"><a href="javascript:void(0)" data-url="${esc(f.url)}" onclick="openExternal(this.dataset.url)">📎 ${esc(f.name)}</a></div>`).join('')}
                   </div>
                 </div>
-              `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`}
+              `).join('') || `<div class="empty-box">${esc(t('noData'))}</div>`}
             </div>
           </div>
         `;
@@ -1840,18 +1904,54 @@
       `;
     }
 
+    function downloadHemisDoc(fileUrl, fallbackLink) {
+      if (API_BASE && UID && SIG && fileUrl) {
+        openExternal(`${API_BASE}/api/document-download?url=${encodeURIComponent(fileUrl)}&uid=${encodeURIComponent(UID)}&sig=${encodeURIComponent(SIG)}`);
+        return;
+      }
+      if (fallbackLink || fileUrl) openExternal(fallbackLink || fileUrl);
+    }
+
     function renderServices() {
       const clr = state.services.clearance || [];
       const app = state.services.appeals || { eligible: [], appeals: [] };
+      const docs = state.documents || { documents: [], references: [], decrees: [] };
       const tab = state.ui.srvTab;
       return `
         <div class="stack">
           <div class="tabs">
+            <button class="tab-btn ${tab === 'documents' ? 'active' : ''}" onclick="state.ui.srvTab='documents';render();">${esc(t('documents'))}</button>
+            <button class="tab-btn ${tab === 'references' ? 'active' : ''}" onclick="state.ui.srvTab='references';render();">${esc(t('references'))}</button>
+            <button class="tab-btn ${tab === 'decrees' ? 'active' : ''}" onclick="state.ui.srvTab='decrees';render();">${esc(t('decrees'))}</button>
             <button class="tab-btn ${tab === 'clearance' ? 'active' : ''}" onclick="state.ui.srvTab='clearance';render();">${esc(t('clearance'))}</button>
             <button class="tab-btn ${tab === 'appeals' ? 'active' : ''}" onclick="state.ui.srvTab='appeals';render();">${esc(t('appeals'))}</button>
           </div>
           <div class="card">
-            ${tab === 'clearance' ? (clr.length ? clr.map(c => `
+            ${tab === 'documents' ? ((docs.documents || []).length ? docs.documents.map(d => `
+              <div class="row-item" style="align-items:flex-start;">
+                <div style="min-width:0;">
+                  <div style="font-weight:700;">${esc(d.name)}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">${(d.attributes || []).map(a => esc(a.label + ': ' + a.value)).join(' • ')}</div>
+                </div>
+                ${(d.file || d.link) ? `<button class="btn btn-sm btn-primary" data-file="${esc(d.file)}" data-link="${esc(d.link)}" onclick="downloadHemisDoc(this.dataset.file, this.dataset.link)">📄 Yuklash</button>` : ''}
+              </div>
+            `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`) : tab === 'references' ? ((docs.references || []).length ? docs.references.map(r => `
+              <div class="row-item">
+                <div>
+                  <div style="font-weight:700;">Ma'lumotnoma № ${esc(r.number)}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">${esc(r.department)} • ${esc(r.level)} • ${esc(r.semester)} ${r.date ? '• ' + esc(r.date) : ''}</div>
+                </div>
+                ${r.file ? `<button class="btn btn-sm btn-primary" data-file="${esc(r.file)}" onclick="downloadHemisDoc(this.dataset.file, '')">📄 PDF</button>` : ''}
+              </div>
+            `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`) : tab === 'decrees' ? ((docs.decrees || []).length ? docs.decrees.map(dc => `
+              <div class="row-item" style="align-items:flex-start;">
+                <div style="min-width:0;">
+                  <div style="font-weight:700;">№ ${esc(dc.number)} — ${esc(dc.name)}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">${esc(dc.decree_type)} • ${esc(dc.department)} ${dc.date ? '• ' + esc(dc.date) : ''}</div>
+                </div>
+                ${dc.file ? `<button class="btn btn-sm btn-ghost" data-file="${esc(dc.file)}" onclick="downloadHemisDoc(this.dataset.file, '')">📄 PDF</button>` : ''}
+              </div>
+            `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`) : tab === 'clearance' ? (clr.length ? clr.map(c => `
               <div class="row-item">
                 <div><div style="font-weight:700;">${esc(c.department)}</div><div style="font-size:12px;color:var(--text-secondary);">${esc(c.employee || '')} ${c.comment ? '• ' + esc(c.comment) : ''}</div></div>
                 <span class="pill ${c.accepted ? 'pill-success' : 'pill-warning'}">${esc(c.status)}</span>
@@ -1895,7 +1995,7 @@
                   <div style="font-weight:700;">${esc(b.name || b.title || 'Adabiyot')}</div>
                   <div style="font-size:12px;color:var(--text-secondary);">${esc(b.authors || b.author || '')} ${b.publisher_year ? '• ' + esc(b.publisher_year) : ''}</div>
                 </div>
-                <button class="btn btn-sm btn-ghost" onclick="openExternal('https://unilibrary.uz')">Ochish</button>
+                <button class="btn btn-sm btn-ghost" data-url="${esc(b.link || b.url || ('https://unilibrary.uz/literature?name=' + encodeURIComponent(b.name || b.title || '')))}" onclick="openExternal(this.dataset.url)">Ochish</button>
               </div>
             `).join('') : `<div class="empty-box">Qidiruv so'zini kiriting yoki <a href="javascript:void(0)" onclick="openExternal('https://unilibrary.uz')">unilibrary.uz</a> ni oching</div>`}
           </div>
@@ -1952,6 +2052,7 @@
         ['Fakultet', p.faculty], ['Yo\'nalish', p.specialty], ['Guruh', p.group],
         ['Kurs / Semestr', [p.course, p.semester].filter(Boolean).join(' • ')],
         ['Ta\'lim turi / shakli', [p.education_type, p.education_form].filter(Boolean).join(' • ')],
+        ['Ta\'lim tili / Holati', [p.education_lang, p.student_status].filter(Boolean).join(' • ')],
         ['To\'lov shakli', p.payment_form], ['O\'rtacha GPA', p.avg_gpa],
         ['Telefon', p.phone], ['Email', p.email], ['Tug\'ilgan sana', p.birth_date],
         ['Pasport / JSHSHIR', [p.passport, p.jshshir].filter(Boolean).join(' • ')],
@@ -2074,9 +2175,13 @@
       if (API_BASE && (INIT_DATA || (UID && SIG))) {
         try {
           const data = await apiCall('/api/bootstrap');
+          state.apiError = '';
           applyBootstrapPayload(data);
           render();
-        } catch (e) {}
+        } catch (e) {
+          state.apiError = e.message || 'API xatosi';
+          render();
+        }
       }
     }
 
