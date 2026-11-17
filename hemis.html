@@ -683,7 +683,7 @@
     <div class="main-col">
       <header class="topbar">
         <div class="topbar-left">
-          <div class="mobile-brand" onclick="navTo('dashboard')" style="cursor:pointer;">
+          <div class="mobile-brand" data-nav="dashboard" style="cursor:pointer;">
             <div class="brand-logo" style="width:30px;height:30px;font-size:12px;">H</div>
             <div>
               <div style="font-weight:800;font-size:14px;line-height:1.1;">MY.HEMIS.UZ</div>
@@ -696,14 +696,14 @@
           </div>
         </div>
         <div class="topbar-actions">
-          <button class="icon-btn" id="refreshBtn" onclick="forceRefresh()" title="Yangilash">
+          <button type="button" class="icon-btn" id="refreshBtn" data-act="refresh" title="Yangilash">
             <span id="refreshIcon"></span>
           </button>
-          <button class="icon-btn" onclick="cycleLanguage()" title="Til">
+          <button type="button" class="icon-btn" data-act="cycle-lang" title="Til">
             <span id="langBadge">UZ</span>
           </button>
-          <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Mavzu"></button>
-          <button class="avatar-chip" id="avatarBtn" onclick="navTo('profile')">
+          <button type="button" class="icon-btn" data-act="toggle-theme" id="themeBtn" title="Mavzu"></button>
+          <button type="button" class="avatar-chip" id="avatarBtn" data-nav="profile">
             <span class="avatar-circle" id="avatarInitials">ST</span>
             <span class="avatar-name-text" id="avatarName">Talaba</span>
           </button>
@@ -723,8 +723,40 @@
       try { tg.ready(); tg.expand(); } catch (e) {}
     }
 
+    function validateApiBase(raw) {
+      const trimmed = String(raw || '').trim().replace(/\/+$/, '');
+      if (!trimmed) return '';
+      try {
+        const u = new URL(trimmed);
+        if (u.username || u.password) return '';
+        const isLocal = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+        if (u.protocol === 'https:' || (u.protocol === 'http:' && isLocal)) {
+          return (u.origin + u.pathname).replace(/\/+$/, '');
+        }
+      } catch (e) {}
+      return '';
+    }
+
+    function safeHttpUrl(raw) {
+      const trimmed = String(raw || '').trim();
+      if (!trimmed) return '';
+      try {
+        const u = new URL(trimmed, window.location.origin);
+        if ((u.protocol === 'https:' || u.protocol === 'http:') && !u.username && !u.password) {
+          return u.href;
+        }
+      } catch (e) {}
+      return '';
+    }
+
     const qs = new URLSearchParams(window.location.search);
-    const API_BASE = (qs.get('api') || '').replace(/\/+$/, '');
+    const RAW_API_PARAM = qs.get('api');
+    const SELF_HOSTED_API = (
+      !qs.has('api')
+      && !window.location.hostname.endsWith('.github.io')
+      && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ) ? window.location.origin : '';
+    const API_BASE = RAW_API_PARAM ? validateApiBase(RAW_API_PARAM) : SELF_HOSTED_API;
     const UID = qs.get('uid') || (tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : '');
     const SIG = qs.get('sig') || '';
     const INIT_DATA = tg?.initData || '';
@@ -738,7 +770,7 @@
         grpMain: 'Asosiy', grpEdu: "O'quv jarayoni", grpFin: 'Moliya va xizmatlar', grpAcc: 'Shaxsiy',
         notConnected: "HEMIS hisobiga ulaning", loginTitle: "MY.HEMIS.UZ tizimiga kirish",
         loginSub: "Talaba ID va parolingizni kiriting. Parol shifrlangan holda saqlanadi.",
-        studentId: "Talaba ID (Login)", password: "Parol", signIn: "Tizimga kirish",
+        studentId: "Talaba ID (Login)", password: "Parol", signIn: "Tizimga kirish", cancel: "Bekor qilish",
         publicTools: "Ommaviy xizmatlar (my.hemis.uz)",
         avgGpa: "O'rtacha GPA", attRisk: "Davomat holati", dailyGrades: "Kunlik baholar", debts: "Qarzdorlik",
         todaySchedule: "Bugungi darslar", recentGrades: "Oxirgi kunlik baholar", quickMenus: "Tezkor bo'limlar",
@@ -746,7 +778,8 @@
         performance: "Semestr baholari", resourcesTasks: "Resurslar va topshiriqlar",
         contract: "Kontrakt", stipend: "Stipendiya", subsidy: "Ijara subsidiyasi",
         dorm: "Yotoqxona", creditMod: "Kredit-modul", rent: "Ijara",
-        clearance: "Ketish varaqasi", appeals: "Apellyatsiyalar", documents: "Hujjatlar", references: "Ma'lumotnomalar", decrees: "Buyruqlar", oneidServices: "Markaziy OneID xizmatlari",
+        clearance: "Ketish varaqasi", appeals: "Apellyatsiyalar", documents: "Hujjatlar",
+        references: "Ma'lumotnomalar", decrees: "Buyruqlar", oneidServices: "Markaziy OneID xizmatlari",
         oneidHint: "Ushbu bo'limlar markaziy my.hemis.uz (OneID / EduIMZO) portalida ishlaydi:",
         openOfficial: "my.hemis.uz da ochish",
         notifTitle: "Telegram bildirishnomalar & hisobotlar",
@@ -755,6 +788,59 @@
         pdfReport: "PDF Hisobot yuklab olish", switchAcc: "Hisobni almashtirish", logout: "Hisobdan chiqish",
         noData: "Ma'lumot topilmadi", loading: "Ma'lumotlar yuklanmoqda...",
         snapshotMode: "Kesh / Tezkor rejim (jonli API ulanmagan)",
+        refresh: "Yangilash", all: "Barchasi",
+        student: "Talaba", studentCab: "Talaba kabineti", studentSys: "Talaba tizimi",
+        uniMgmtSub: "Oliy ta'lim jarayonlarini boshqarish tizimi",
+        loginPlaceholder: "Masalan: 369231100376",
+        loginFillErr: "Login va parolni kiriting",
+        loginOk: "Muvaffaqiyatli ulandi!",
+        noScheduleYet: "Hozircha jadval ma'lumoti yo'q",
+        nowPrefix: "Hozir", roomLabel: "Xona", endsInMin: "Tugashiga {m} daq",
+        breakNext: "Tanaffus • Keyingi", startsAt: "{t} da boshlanadi ({m} daq qoldi)",
+        firstClass: "Birinchi dars", atTimeLeft: "{t} da ({m} daq qoldi)",
+        classesDone: "Bugungi darslar yakunlandi", totalPairs: "Jami {n} juftlik dars",
+        noClassToday: "Bugun dars yo'q", dayOffDesc: "Dam olish kuni",
+        current: "Joriy", subjWarnCount: "{n} ta fanda ogohlantirish", allOkAtt: "Barcha fanlar me'yorda",
+        lastGradeSub: "Oxirgi: {g} ball", currentSem: "Joriy semestr",
+        retraining: "Qayta topshirish", noDebts: "Qarzdorlik yo'q", noDebtsCheck: "✅ Akademik qarzdorliklar topilmadi",
+        weekLabel: "Hafta", pairUnit: "juftlik", lessonType: "Dars",
+        totalMissed: "Jami qoldirilgan", bySem: "Semestr bo'yicha", unexcused: "Sababsiz",
+        excusedPrefix: "Sababli", atRiskLabel: "Xavf ostida", ofSubjCount: "{n} ta fandan",
+        limitLabel: "Chegara", alertPrefix: "Ogohlantirish", hoursShort: "s",
+        auditoryHours: "Auditoriya soati", limitWord: "limit", excusedWord: "Sababli", unexcusedWord: "Sababsiz",
+        qrHint: "Dars xonasidagi HEMIS QR-kodini skanerlang yoki kodni qo'lda kiriting.",
+        qrScanBtn: "QR-kodni skanerlash", qrInputPh: "QR kod matni...", sendBtn: "Yuborish",
+        avgWord: "O'rtacha", thSubj: "Fan", thTotal: "Jami", thCredit: "Kredit", thHours: "Soat", thType: "Turi", thScore: "Ball",
+        filterSubj: "Fan bo'yicha filter", allSubjsCount: "Barcha fanlar ({n})",
+        tasks: "Topshiriqlar", resources: "O'quv resurslari", deadline: "Muddat",
+        gpaHistory: "GPA va kurslar tarixi", debtsTitle: "Akademik qarzdorliklar (Cheklovlar)", eduplanWord: "O'quv reja",
+        summa: "Summa", paid: "To'langan", debt: "Qarz", card: "Karta", som: "so'm",
+        downloadDoc: "Yuklash", referenceNum: "Ma'lumotnoma №",
+        myAppeals: "Mening apellyatsiyalarim", eligibleAppeals: "Apellyatsiya topshirish mumkin",
+        libSearchPh: "Kitob, muallif yoki fan nomi...", openBtn: "Ochish",
+        libEmpty: "Qidiruv so'zini kiriting yoki Unilibrary.uz portalini oching",
+        libOpenPortal: "unilibrary.uz ni ochish",
+        libFail: "Kutubxona bilan ulanishda xatolik — portalda qidirish mumkin",
+        allEduFin: "Barcha O'quv va Moliyaviy Bo'limlar",
+        mutedOff: "🔕 O'chirilgan", mutedOn: "🔔 Faol",
+        saveToBot: "💾 Botga saqlash",
+        dirtySettingsHint: "O'zgarishlarni botga saqlash uchun pastdagi tugmani bosing.",
+        pdfSentToast: "PDF hisobot Telegram chatiga yuborildi!",
+        savedToast: "Saqlandi", updatedToast: "Yangilandi", refreshedToast: "Ma'lumotlar yangilandi",
+        loggedOutToast: "Hisobdan chiqildi", invalidUrlToast: "Havola xavfsizlik talabiga mos emas",
+        inlineNoSendData: "Inline menyuda botga to'g'ridan-to'g'ri yuborib bo'lmaydi; Reply klaviatura orqali oching.",
+        telegramOnly: "Botga ulanish uchun Telegram ichidan oching",
+        authErrTitle: "HEMIS avtorizatsiyasi eskirgan yoki parol o'zgargan",
+        authErrDesc: "Ma'lumotlar yangilanmayapti. Qayta kirish tugmasini bosing.",
+        reloginBtn: "Qayta kirish",
+        partialErrPrefix: "Ba'zi bo'limlarda vaqtinchalik xatolik",
+        sectionLoadErr: "Bo'lim ma'lumotini yuklashda xatolik",
+        qrEnterToast: "QR-kod matnini kiriting",
+        quickDescSubjects: "JN, ON, YN, resurslar", quickDescPayment: "Kontrakt, stipendiya, ijara",
+        quickDescExams: "Imtihon sanalari va xonalar", quickDescEduplan: "Semestrlar va GPA",
+        quickDescServices: "Ketish varaqasi, apellyatsiya", quickDescLibrary: "Unilibrary elektron baza",
+        subPassReset: "Parolni tiklash", subDiplomaCheck: "Diplom tekshirish",
+        subGetContract: "Shartnoma olish", subStats: "Umumiy statistika",
         days: {1: 'Dushanba', 2: 'Seshanba', 3: 'Chorshanba', 4: 'Payshanba', 5: 'Juma', 6: 'Shanba', 7: 'Yakshanba'},
         daysShort: {1: 'Du', 2: 'Se', 3: 'Ch', 4: 'Pa', 5: 'Ju', 6: 'Sh'}
       },
@@ -766,7 +852,7 @@
         grpMain: 'Основное', grpEdu: 'Учебный процесс', grpFin: 'Финансы и услуги', grpAcc: 'Личное',
         notConnected: "Подключите аккаунт HEMIS", loginTitle: "Вход в MY.HEMIS.UZ",
         loginSub: "Введите ID студента и пароль. Данные хранятся в зашифрованном виде.",
-        studentId: "ID студента (Логин)", password: "Пароль", signIn: "Войти",
+        studentId: "ID студента (Логин)", password: "Пароль", signIn: "Войти", cancel: "Отмена",
         publicTools: "Публичные сервисы (my.hemis.uz)",
         avgGpa: "Средний GPA", attRisk: "Посещаемость", dailyGrades: "Дневные оценки", debts: "Задолженности",
         todaySchedule: "Пары на сегодня", recentGrades: "Последние дневные оценки", quickMenus: "Быстрый доступ",
@@ -774,7 +860,8 @@
         performance: "Оценки за семестр", resourcesTasks: "Ресурсы и задания",
         contract: "Контракт", stipend: "Стипендия", subsidy: "Субсидия аренды",
         dorm: "Общежитие", creditMod: "Кредит-модуль", rent: "Аренда",
-        clearance: "Обходной лист", appeals: "Апелляции", documents: "Документы", references: "Справки", decrees: "Приказы", oneidServices: "Центральные сервисы OneID",
+        clearance: "Обходной лист", appeals: "Апелляции", documents: "Документы",
+        references: "Справки", decrees: "Приказы", oneidServices: "Центральные сервисы OneID",
         oneidHint: "Эти разделы работают на центральном портале my.hemis.uz (OneID / EduIMZO):",
         openOfficial: "Открыть в my.hemis.uz",
         notifTitle: "Telegram уведомления и отчёты",
@@ -783,6 +870,59 @@
         pdfReport: "Скачать PDF отчёт", switchAcc: "Сменить аккаунт", logout: "Выйти",
         noData: "Данные не найдены", loading: "Загрузка данных...",
         snapshotMode: "Кэш-режим (живой API сервер не подключён)",
+        refresh: "Обновить", all: "Все",
+        student: "Студент", studentCab: "Кабинет студента", studentSys: "Система студента",
+        uniMgmtSub: "Информационная система управления учебным процессом",
+        loginPlaceholder: "Например: 369231100376",
+        loginFillErr: "Введите логин и пароль",
+        loginOk: "Успешно подключено!",
+        noScheduleYet: "Пока нет данных расписания",
+        nowPrefix: "Сейчас", roomLabel: "Ауд.", endsInMin: "До конца {m} мин",
+        breakNext: "Перерыв • Далее", startsAt: "Начало в {t} ({m} мин)",
+        firstClass: "Первая пара", atTimeLeft: "В {t} (через {m} мин)",
+        classesDone: "Пары на сегодня завершены", totalPairs: "Всего пар: {n}",
+        noClassToday: "Сегодня пар нет", dayOffDesc: "Выходной день",
+        current: "Текущий", subjWarnCount: "Предупреждений: {n}", allOkAtt: "Все предметы в норме",
+        lastGradeSub: "Последняя: {g}", currentSem: "Текущий семестр",
+        retraining: "Пересдача", noDebts: "Без долгов", noDebtsCheck: "✅ Академических задолженностей не найдено",
+        weekLabel: "Неделя", pairUnit: "пар(ы)", lessonType: "Занятие",
+        totalMissed: "Всего пропущено", bySem: "За семестр", unexcused: "Неуважительные",
+        excusedPrefix: "Уважительные", atRiskLabel: "В зоне риска", ofSubjCount: "из {n} предм.",
+        limitLabel: "Лимит", alertPrefix: "Порог уведомл.", hoursShort: "ч",
+        auditoryHours: "Аудиторные часы", limitWord: "лимит", excusedWord: "Уважит.", unexcusedWord: "Неуважит.",
+        qrHint: "Отсканируйте QR-код аудитории или введите код вручную.",
+        qrScanBtn: "Сканировать QR-код", qrInputPh: "Текст QR-кода...", sendBtn: "Отправить",
+        avgWord: "Среднее", thSubj: "Предмет", thTotal: "Итого", thCredit: "Кредит", thHours: "Часы", thType: "Тип", thScore: "Балл",
+        filterSubj: "Фильтр по предмету", allSubjsCount: "Все предметы ({n})",
+        tasks: "Задания", resources: "Учебные ресурсы", deadline: "Срок",
+        gpaHistory: "История GPA и курсов", debtsTitle: "Академические задолженности", eduplanWord: "Учебный план",
+        summa: "Сумма", paid: "Оплачено", debt: "Долг", card: "Карта", som: "сум",
+        downloadDoc: "Скачать", referenceNum: "Справка №",
+        myAppeals: "Мои апелляции", eligibleAppeals: "Доступно для апелляции",
+        libSearchPh: "Название книги, автор или предмет...", openBtn: "Открыть",
+        libEmpty: "Введите запрос для поиска или откройте портал Unilibrary.uz",
+        libOpenPortal: "Открыть unilibrary.uz",
+        libFail: "Ошибка подключения к библиотеке — попробуйте поиск на портале",
+        allEduFin: "Все учебные и финансовые разделы",
+        mutedOff: "🔕 Отключено", mutedOn: "🔔 Активно",
+        saveToBot: "💾 Сохранить в боте",
+        dirtySettingsHint: "Нажмите кнопку ниже, чтобы отправить изменения в бот.",
+        pdfSentToast: "PDF отчёт отправлен в чат Telegram!",
+        savedToast: "Сохранено", updatedToast: "Обновлено", refreshedToast: "Данные обновлены",
+        loggedOutToast: "Выход выполнен", invalidUrlToast: "Ссылка не прошла проверку безопасности",
+        inlineNoSendData: "В inline-режиме отправка напрямую недоступна; откройте через клавиатуру бота.",
+        telegramOnly: "Откройте мини-приложение внутри Telegram",
+        authErrTitle: "Сессия HEMIS устарела или изменился пароль",
+        authErrDesc: "Данные не обновляются. Войдите заново.",
+        reloginBtn: "Войти заново",
+        partialErrPrefix: "Временная ошибка в разделах",
+        sectionLoadErr: "Ошибка загрузки раздела",
+        qrEnterToast: "Введите текст QR-кода",
+        quickDescSubjects: "ТО, ПО, ИО, ресурсы", quickDescPayment: "Контракт, стипендия, аренда",
+        quickDescExams: "Даты и аудитории экзаменов", quickDescEduplan: "Семестры и GPA",
+        quickDescServices: "Обходной лист, апелляция", quickDescLibrary: "Электронная база Unilibrary",
+        subPassReset: "Сброс пароля", subDiplomaCheck: "Проверка диплома",
+        subGetContract: "Получить контракт", subStats: "Общая статистика",
         days: {1: 'Понедельник', 2: 'Вторник', 3: 'Среда', 4: 'Четверг', 5: 'Пятница', 6: 'Суббота', 7: 'Воскресенье'},
         daysShort: {1: 'Пн', 2: 'Вт', 3: 'Ср', 4: 'Чт', 5: 'Пт', 6: 'Сб'}
       },
@@ -794,7 +934,7 @@
         grpMain: 'Main', grpEdu: 'Education', grpFin: 'Finance & Services', grpAcc: 'Account',
         notConnected: "Connect your HEMIS account", loginTitle: "Sign in to MY.HEMIS.UZ",
         loginSub: "Enter your Student ID and password. Credentials are stored encrypted.",
-        studentId: "Student ID (Login)", password: "Password", signIn: "Sign In",
+        studentId: "Student ID (Login)", password: "Password", signIn: "Sign In", cancel: "Cancel",
         publicTools: "Public Services (my.hemis.uz)",
         avgGpa: "Average GPA", attRisk: "Attendance", dailyGrades: "Daily Grades", debts: "Debts",
         todaySchedule: "Today's Classes", recentGrades: "Recent Daily Grades", quickMenus: "Quick Actions",
@@ -802,7 +942,8 @@
         performance: "Semester Grades", resourcesTasks: "Resources & Tasks",
         contract: "Contract", stipend: "Stipend", subsidy: "Rent Subsidy",
         dorm: "Dormitory", creditMod: "Credit Module", rent: "Rent Info",
-        clearance: "Clearance Sheet", appeals: "Appeals", documents: "Documents", references: "References", decrees: "Decrees", oneidServices: "Central OneID Services",
+        clearance: "Clearance Sheet", appeals: "Appeals", documents: "Documents",
+        references: "References", decrees: "Decrees", oneidServices: "Central OneID Services",
         oneidHint: "These sections open on the official my.hemis.uz portal (OneID / EduIMZO):",
         openOfficial: "Open on my.hemis.uz",
         notifTitle: "Telegram Alerts & Reports",
@@ -811,10 +952,71 @@
         pdfReport: "Download PDF Report", switchAcc: "Switch Student", logout: "Log Out",
         noData: "No data available", loading: "Loading data...",
         snapshotMode: "Snapshot mode (live API tunnel unavailable)",
+        refresh: "Refresh", all: "View all",
+        student: "Student", studentCab: "Student Portal", studentSys: "Student System",
+        uniMgmtSub: "Higher Education Process Management System",
+        loginPlaceholder: "Example: 369231100376",
+        loginFillErr: "Please enter both Student ID and password",
+        loginOk: "Connected successfully!",
+        noScheduleYet: "No timetable data yet",
+        nowPrefix: "Now", roomLabel: "Room", endsInMin: "Ends in {m} min",
+        breakNext: "Break • Next", startsAt: "Starts at {t} ({m} min left)",
+        firstClass: "First class", atTimeLeft: "At {t} ({m} min left)",
+        classesDone: "Today's classes are finished", totalPairs: "Total classes: {n}",
+        noClassToday: "No classes today", dayOffDesc: "Day off",
+        current: "Current", subjWarnCount: "{n} subject warning(s)", allOkAtt: "All subjects in norm",
+        lastGradeSub: "Latest: {g}", currentSem: "Current semester",
+        retraining: "Retraining", noDebts: "No debts", noDebtsCheck: "✅ No academic debts found",
+        weekLabel: "Week", pairUnit: "classes", lessonType: "Class",
+        totalMissed: "Total missed", bySem: "By semester", unexcused: "Unexcused",
+        excusedPrefix: "Excused", atRiskLabel: "At risk", ofSubjCount: "of {n} subjects",
+        limitLabel: "Limit", alertPrefix: "Alert", hoursShort: "h",
+        auditoryHours: "Auditory hours", limitWord: "limit", excusedWord: "Excused", unexcusedWord: "Unexcused",
+        qrHint: "Scan the classroom HEMIS QR code or enter it manually.",
+        qrScanBtn: "Scan QR Code", qrInputPh: "QR code text...", sendBtn: "Submit",
+        avgWord: "Avg", thSubj: "Subject", thTotal: "Total", thCredit: "Credit", thHours: "Hours", thType: "Type", thScore: "Score",
+        filterSubj: "Filter by subject", allSubjsCount: "All subjects ({n})",
+        tasks: "Tasks", resources: "Learning Resources", deadline: "Due",
+        gpaHistory: "GPA & Course History", debtsTitle: "Academic Debts", eduplanWord: "Curriculum",
+        summa: "Total", paid: "Paid", debt: "Debt", card: "Card", som: "UZS",
+        downloadDoc: "Download", referenceNum: "Certificate #",
+        myAppeals: "My Appeals", eligibleAppeals: "Eligible for Appeal",
+        libSearchPh: "Book title, author or subject...", openBtn: "Open",
+        libEmpty: "Enter a search query or open the Unilibrary.uz portal",
+        libOpenPortal: "Open unilibrary.uz",
+        libFail: "Library connection error — you can search directly on the portal",
+        allEduFin: "All Academic & Finance Sections",
+        mutedOff: "🔕 Muted", mutedOn: "🔔 Active",
+        saveToBot: "💾 Save to Bot",
+        dirtySettingsHint: "Press the button below to sync changes to the bot.",
+        pdfSentToast: "PDF report sent to your Telegram chat!",
+        savedToast: "Saved", updatedToast: "Updated", refreshedToast: "Data refreshed",
+        loggedOutToast: "Logged out", invalidUrlToast: "URL blocked by security policy",
+        inlineNoSendData: "Direct send is unavailable in inline mode; open from the bot keyboard.",
+        telegramOnly: "Open inside Telegram to connect with the bot",
+        authErrTitle: "HEMIS session expired or password changed",
+        authErrDesc: "Live updates paused. Please sign in again.",
+        reloginBtn: "Sign in again",
+        partialErrPrefix: "Temporary errors in sections",
+        sectionLoadErr: "Failed to load section data",
+        qrEnterToast: "Enter QR code text",
+        quickDescSubjects: "Daily, midterm, final, resources", quickDescPayment: "Contract, stipend, rent",
+        quickDescExams: "Exam dates & rooms", quickDescEduplan: "Semesters & GPA",
+        quickDescServices: "Clearance, appeals", quickDescLibrary: "Unilibrary digital catalog",
+        subPassReset: "Reset Password", subDiplomaCheck: "Verify Diploma",
+        subGetContract: "Get Contract", subStats: "General Statistics",
         days: {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday'},
         daysShort: {1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat'}
       }
     };
+
+    function getTashkentClock() {
+      const utcMs = Date.now() + 5 * 3600 * 1000;
+      const d = new Date(utcMs);
+      const jsDay = d.getUTCDay();
+      const wd = jsDay === 0 ? 7 : jsDay;
+      return { wd, minutes: d.getUTCHours() * 60 + d.getUTCMinutes() };
+    }
 
     const state = {
       lang: ['uz', 'ru', 'en'].includes(qs.get('lang')) ? qs.get('lang') : 'uz',
@@ -822,6 +1024,8 @@
       authenticated: false,
       liveApi: false,
       apiError: '',
+      authError: false,
+      sectionErrors: {},
       loading: false,
       profile: null,
       radar: {},
@@ -841,12 +1045,14 @@
       libraryItems: [],
       settings: {
         language: 'uz', notifications_enabled: 1, daily_enabled: 1, weekly_enabled: 1,
-        report_time: '18:30', alert_threshold: 15, muted: [],
+        report_time: '18:30', alert_threshold: 15,
+        att_warning: 12, att_critical: 20, att_limit: 25,
+        muted: [],
         report_time_choices: ['08:00', '12:00', '18:30', '20:00'],
         threshold_choices: [12, 15, 20]
       },
       ui: {
-        day: (new Date().getDay() === 0 ? 1 : new Date().getDay()),
+        day: (() => { const w = getTashkentClock().wd; return w === 7 ? 1 : w; })(),
         selectedWeekId: '',
         attTab: 'subject',
         subjTab: 'daily',
@@ -856,11 +1062,18 @@
         payTab: 'contract',
         srvTab: 'documents',
         libQuery: '',
-        showLoginModal: false
+        showLoginModal: false,
+        settingsDirty: false,
+        loadedSections: {}
       }
     };
 
     function t(key) { return (I18N[state.lang] || I18N.uz)[key] || key; }
+    function tf(key, vars = {}) {
+      let s = String(t(key));
+      for (const [k, v] of Object.entries(vars)) s = s.replace(`{${k}}`, String(v ?? ''));
+      return s;
+    }
 
     function esc(s) {
       return String(s ?? '').replace(/[&<>"']/g, c => ({
@@ -876,7 +1089,12 @@
       el._t = setTimeout(() => el.classList.remove('show'), 3200);
     }
 
-    function openExternal(url) {
+    function openExternal(rawUrl) {
+      const url = safeHttpUrl(rawUrl);
+      if (!url) {
+        showToast(t('invalidUrlToast'));
+        return;
+      }
       if (tg && tg.openLink) {
         tg.openLink(url);
       } else {
@@ -933,7 +1151,7 @@
       state.authenticated = Boolean(snap.auth);
       if (snap.p) state.profile = snap.p;
       if (snap.st) state.settings = { ...state.settings, ...snap.st };
-      if (snap.st?.language) state.lang = snap.st.language;
+      if (snap.st?.language && ['uz', 'ru', 'en'].includes(snap.st.language)) state.lang = snap.st.language;
       if (snap.sch) state.schedule = snap.sch;
       if (snap.att) state.attendance = { report: snap.att.report || [], recent: snap.att.recent || [] };
       if (snap.dg) state.dailyGrades = snap.dg;
@@ -963,10 +1181,23 @@
       state.eduplan = data.eduplan || { gpa_list: [], semesters: {}, semester_meta: [] };
       state.services = data.services || { clearance: [], appeals: { eligible: [], appeals: [] } };
       state.documents = data.documents || { documents: [], references: [], decrees: [] };
+      state.authError = Boolean(data.auth_error);
+      state.sectionErrors = (data.section_errors && typeof data.section_errors === 'object') ? data.section_errors : {};
+      state.ui.loadedSections = {
+        exams: true,
+        eduplan: true,
+        services: true,
+        documents: true,
+        payment: true,
+        attendance: true,
+        timetable: true,
+        subjects: true,
+      };
       if (data.settings) {
         state.settings = { ...state.settings, ...data.settings };
-        if (data.settings.language) state.lang = data.settings.language;
+        if (['uz', 'ru', 'en'].includes(data.settings.language)) state.lang = data.settings.language;
       }
+      state.ui.settingsDirty = false;
     }
 
     async function apiCall(path, opts = {}) {
@@ -982,7 +1213,16 @@
       return json;
     }
 
+    function isNetworkError(err) {
+      const msg = String(err?.message || '');
+      return msg === 'NO_API' || err?.name === 'TypeError' || /Failed to fetch|Load failed|NetworkError|fetch/i.test(msg);
+    }
+
     function sendToBot(payload) {
+      if (INIT_DATA) {
+        showToast(t('inlineNoSendData'));
+        return false;
+      }
       const data = { source: 'hemis_webapp', ...payload };
       if (tg && tg.sendData) {
         try {
@@ -991,13 +1231,22 @@
           return true;
         } catch (e) {}
       }
-      showToast('Botga ulanish uchun Telegram ichidan oching');
+      showToast(t('telegramOnly'));
       return false;
     }
 
-    function computeRadarFromSchedule() {
-      const now = new Date();
-      const wd = now.getDay() === 0 ? 7 : now.getDay();
+    function resolveRadar() {
+      const { wd, minutes: nowM } = getTashkentClock();
+      if (state.radar && state.radar.status && Number(state.radar.weekday) === wd) {
+        const sr = state.radar;
+        const target = sr.current_lesson || sr.next_lesson || sr.first_lesson || null;
+        return {
+          status: sr.status,
+          lessons: sr.lessons_today || state.schedule[wd] || state.schedule[String(wd)] || [],
+          target,
+          left: Number(sr.left_min ?? 0),
+        };
+      }
       const lessons = (state.schedule[wd] || state.schedule[String(wd)] || []).slice();
       if (!lessons.length || wd === 7) return { status: 'day_off', lessons: [] };
       const toMin = (hhmm) => {
@@ -1005,19 +1254,18 @@
         return (h || 0) * 60 + (m || 0);
       };
       lessons.sort((a, b) => toMin(a.start_time) - toMin(b.start_time));
-      const nowM = now.getHours() * 60 + now.getMinutes();
       const firstS = toMin(lessons[0].start_time);
       const lastE = toMin(lessons[lessons.length - 1].end_time);
-      if (nowM < firstS) return { status: 'before_classes', lessons, target: lessons[0], left: firstS - nowM };
+      if (nowM < firstS) return { status: 'before_classes', lessons, target: lessons[0], left: Math.max(1, firstS - nowM) };
       if (nowM > lastE) return { status: 'after_classes', lessons };
       for (let i = 0; i < lessons.length; i++) {
         const cur = lessons[i];
         const s = toMin(cur.start_time), e = toMin(cur.end_time);
-        if (nowM >= s && nowM <= e) return { status: 'in_class', lessons, target: cur, left: e - nowM };
+        if (nowM >= s && nowM <= e) return { status: 'in_class', lessons, target: cur, left: Math.max(0, e - nowM) };
         if (i < lessons.length - 1) {
           const nxt = lessons[i + 1];
           const ns = toMin(nxt.start_time);
-          if (nowM > e && nowM < ns) return { status: 'in_break', lessons, target: nxt, left: ns - nowM };
+          if (nowM > e && nowM < ns) return { status: 'in_break', lessons, target: nxt, left: Math.max(1, ns - nowM) };
         }
       }
       return { status: 'after_classes', lessons };
@@ -1028,21 +1276,25 @@
       state.ui.showLoginModal = false;
       render();
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      if (state.liveApi && state.authenticated) {
-        if (page === 'exams' && !state.exams.length) loadSection('exams');
-        if (page === 'eduplan' && !(state.eduplan.gpa_list || []).length) loadSection('eduplan');
+      const canCallApi = Boolean(API_BASE && (INIT_DATA || (UID && SIG)));
+      if (canCallApi && state.authenticated) {
+        if (page === 'exams' && !state.ui.loadedSections.exams) loadSection('exams');
+        if (page === 'eduplan' && !state.ui.loadedSections.eduplan) loadSection('eduplan');
         if (page === 'services') {
-          if (!(state.services.clearance || []).length) loadSection('services');
-          if (!(state.documents.documents || []).length && !(state.documents.references || []).length) loadSection('documents');
+          if (!state.ui.loadedSections.services) loadSection('services');
+          if (!state.ui.loadedSections.documents) loadSection('documents');
         }
-        if (page === 'subjects' && !(state.subjectDetail.resources || []).length) loadSection('subject_detail');
-        if (page === 'library' && !state.libraryItems.length) loadLibrary('');
+        if (page === 'subjects' && !state.ui.loadedSections.subject_detail) loadSection('subject_detail');
+      }
+      if (canCallApi && page === 'library' && !state.ui.loadedSections.library) {
+        loadLibrary(state.ui.libQuery || '');
       }
     }
 
     async function loadSection(name) {
       try {
         const data = await apiCall(`/api/section/${name}`);
+        state.ui.loadedSections[name] = true;
         if (name === 'exams') state.exams = data.exams || [];
         if (name === 'eduplan') state.eduplan = data;
         if (name === 'services') state.services = data;
@@ -1051,36 +1303,47 @@
         if (name === 'payment') state.finance = { ...state.finance, ...data };
         render();
       } catch (e) {
-        showToast(e.message || 'Ma\'lumot yuklashda xatolik');
+        showToast(e.message || t('sectionLoadErr'));
       }
     }
 
     async function loadLibrary(q) {
       state.ui.libQuery = q;
+      if (!API_BASE || (!INIT_DATA && !(UID && SIG))) {
+        showToast(t('libFail'));
+        return;
+      }
       try {
-        const data = await apiCall(`/api/section/library?q=${encodeURIComponent(q)}`);
+        const url = `/api/section/library?q=${encodeURIComponent(q)}&lang=${encodeURIComponent(state.lang)}`;
+        const data = await apiCall(url);
+        if (!data || data.ok === false) {
+          showToast(t('libFail'));
+          return;
+        }
+        state.ui.loadedSections.library = true;
         state.libraryItems = data.items || [];
         render();
       } catch (e) {
-        openExternal(`https://unilibrary.uz/literature?name=${encodeURIComponent(q)}`);
+        showToast(t('libFail'));
       }
     }
 
     async function forceRefresh() {
       const btn = document.getElementById('refreshBtn');
       btn.classList.add('spinning');
+      state.ui.loadedSections = {};
       if (API_BASE) {
         try {
           const data = await apiCall('/api/bootstrap?force=1');
           state.apiError = '';
           applyBootstrapPayload(data);
-          showToast('Ma\'lumotlar yangilandi');
+          showToast(t('refreshedToast'));
           render();
           btn.classList.remove('spinning');
           return;
         } catch (e) {
-          state.apiError = e.message || 'API ulanmadi';
-          showToast('Jonli serverga ulanib bo\'lmadi: ' + state.apiError);
+          state.apiError = e.message || 'API error';
+          showToast(state.apiError);
         }
       }
       btn.classList.remove('spinning');
@@ -1102,7 +1365,7 @@
       state.lang = order[(order.indexOf(state.lang) + 1) % order.length];
       state.settings.language = state.lang;
       render();
-      if (state.liveApi) {
+      if (state.liveApi || API_BASE) {
         try { await apiCall('/api/settings', { method: 'POST', body: JSON.stringify({ language: state.lang }) }); } catch (e) {}
       }
     }
@@ -1114,7 +1377,7 @@
       const errBox = document.getElementById('loginErr');
       const submitBtn = document.getElementById('loginSubmitBtn');
       if (!login || !password) {
-        errBox.textContent = 'Login va parolni kiriting';
+        errBox.textContent = t('loginFillErr');
         errBox.style.display = 'block';
         return;
       }
@@ -1130,11 +1393,11 @@
           applyBootstrapPayload(res);
           state.ui.showLoginModal = false;
           state.page = 'dashboard';
-          showToast('Muvaffaqiyatli ulandi!');
+          showToast(t('loginOk'));
           render();
           return;
         } catch (e) {
-          if (e.message !== 'NO_API' && !String(e.message).includes('Failed to fetch')) {
+          if (!isNetworkError(e)) {
             errBox.textContent = e.message;
             errBox.style.display = 'block';
             submitBtn.disabled = false;
@@ -1143,19 +1406,28 @@
           }
         }
       }
-      sendToBot({ action: 'login', login, password, lang: state.lang });
+      const sent = sendToBot({ action: 'login', login, password, lang: state.lang });
+      if (!sent) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = t('signIn');
+      }
     }
 
     async function handleQrSubmit(code) {
-      if (!code) return;
-      if (state.liveApi) {
+      if (!code) {
+        showToast(t('qrEnterToast'));
+        return;
+      }
+      if (state.liveApi || API_BASE) {
         try {
           const res = await apiCall('/api/qr-attendance', { method: 'POST', body: JSON.stringify({ code }) });
-          showToast(res.message || (res.success ? 'Belgilandi' : 'Tasdiqlanmadi'));
+          showToast(res.message || t('qrSent'));
           return;
         } catch (e) {
-          showToast(e.message);
-          return;
+          if (!isNetworkError(e)) {
+            showToast(e.message);
+            return;
+          }
         }
       }
       sendToBot({ action: 'qr_attendance', code });
@@ -1163,7 +1435,7 @@
 
     function triggerQrScan() {
       if (tg && tg.showScanQrPopup) {
-        tg.showScanQrPopup({ text: 'HEMIS QR-kodni skanerlang' }, (qrText) => {
+        tg.showScanQrPopup({ text: t('qrScanBtn') }, (qrText) => {
           if (qrText) {
             handleQrSubmit(qrText);
             return true;
@@ -1172,45 +1444,67 @@
       } else {
         const inp = document.getElementById('qrManualInput');
         if (inp) inp.focus();
-        showToast('QR-kod matnini kiriting');
+        showToast(t('qrEnterToast'));
       }
     }
 
     async function updateSetting(patch) {
       state.settings = { ...state.settings, ...patch };
-      if (patch.language) state.lang = patch.language;
+      if (patch.language && ['uz', 'ru', 'en'].includes(patch.language)) state.lang = patch.language;
+      if (!state.liveApi && !API_BASE) state.ui.settingsDirty = true;
       render();
-      if (state.liveApi) {
+      if (state.liveApi || API_BASE) {
         try {
           const res = await apiCall('/api/settings', { method: 'POST', body: JSON.stringify(patch) });
           if (res.settings) state.settings = { ...state.settings, ...res.settings };
-          showToast('Saqlandi');
+          state.ui.settingsDirty = false;
+          showToast(t('savedToast'));
+          render();
           return;
-        } catch (e) {}
+        } catch (e) {
+          if (!isNetworkError(e)) {
+            showToast(e.message);
+            return;
+          }
+        }
       }
-      sendToBot({ action: 'save_settings', settings: state.settings });
+      state.ui.settingsDirty = true;
+      render();
     }
 
     async function toggleMuteSubject(subj) {
+      if (!subj) return;
       const m = new Set(state.settings.muted || []);
       if (m.has(subj)) m.delete(subj); else m.add(subj);
       state.settings.muted = Array.from(m);
+      if (!state.liveApi && !API_BASE) state.ui.settingsDirty = true;
       render();
-      if (state.liveApi) {
+      if (state.liveApi || API_BASE) {
         try {
           await apiCall('/api/settings', { method: 'POST', body: JSON.stringify({ toggle_mute: subj }) });
-          showToast('Yangilandi');
-        } catch (e) {}
-      } else {
-        sendToBot({ action: 'save_settings', settings: state.settings });
+          state.ui.settingsDirty = false;
+          showToast(t('updatedToast'));
+          return;
+        } catch (e) {
+          if (!isNetworkError(e)) {
+            showToast(e.message);
+            return;
+          }
+        }
       }
+      state.ui.settingsDirty = true;
+      render();
+    }
+
+    function flushOfflineSettings() {
+      sendToBot({ action: 'save_settings', settings: state.settings });
     }
 
     async function requestPdfReport() {
-      if (state.liveApi) {
+      if (state.liveApi || API_BASE) {
         try {
-          await apiCall('/api/send-report', { method: 'POST', body: JSON.stringify({}) });
-          showToast('PDF hisobot Telegram chatiga yuborildi!');
+          await apiCall('/api/send-report', { method: 'POST', body: '{}' });
+          showToast(t('pdfSentToast'));
           return;
         } catch (e) {
           if (API_BASE && UID && SIG) {
@@ -1223,17 +1517,33 @@
     }
 
     async function handleLogout() {
-      if (state.liveApi) {
+      if (state.liveApi || API_BASE) {
         try {
           await apiCall('/api/logout', { method: 'POST', body: '{}' });
           state.authenticated = false;
           state.profile = null;
-          showToast('Hisobdan chiqildi');
+          state.authError = false;
+          state.sectionErrors = {};
+          state.ui.loadedSections = {};
+          showToast(t('loggedOutToast'));
           render();
           return;
-        } catch (e) {}
+        } catch (e) {
+          if (!isNetworkError(e)) {
+            showToast(e.message);
+            return;
+          }
+        }
       }
       sendToBot({ action: 'logout' });
+    }
+
+    function downloadHemisDoc(fileUrl, fallbackLink) {
+      if (API_BASE && UID && SIG && fileUrl) {
+        openExternal(`${API_BASE}/api/document-download?url=${encodeURIComponent(fileUrl)}&uid=${encodeURIComponent(UID)}&sig=${encodeURIComponent(SIG)}`);
+        return;
+      }
+      if (fallbackLink || fileUrl) openExternal(fallbackLink || fileUrl);
     }
 
     function renderChrome() {
@@ -1243,12 +1553,12 @@
       document.getElementById('langBadge').textContent = state.lang.toUpperCase();
 
       const p = state.profile || {};
-      const fullName = p.full_name || 'Talaba';
+      const fullName = p.full_name || t('student');
       const initials = fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || 'ST';
       document.getElementById('avatarInitials').textContent = initials;
-      document.getElementById('avatarName').textContent = fullName.split(/\s+/)[0] || 'Talaba';
-      document.getElementById('sidebarSub').textContent = p.group || 'Talaba kabineti';
-      document.getElementById('mobileUniLabel').textContent = p.group || p.university || 'Talaba tizimi';
+      document.getElementById('avatarName').textContent = fullName.split(/\s+/)[0] || t('student');
+      document.getElementById('sidebarSub').textContent = p.group || t('studentCab');
+      document.getElementById('mobileUniLabel').textContent = p.group || p.university || t('studentSys');
 
       const pageLabels = {
         dashboard: t('home'), timetable: t('timetable'), attendance: t('attendance'),
@@ -1257,9 +1567,8 @@
         useful: t('useful'), profile: t('profile'), settings: t('settings')
       };
       document.getElementById('headerTitle').textContent = state.authenticated ? (pageLabels[state.page] || 'MY.HEMIS.UZ') : t('loginTitle');
-      document.getElementById('headerSub').textContent = p.university || 'Oliy ta\'lim jarayonlarini boshqarish tizimi';
+      document.getElementById('headerSub').textContent = p.university || t('uniMgmtSub');
 
-      // Sidebar Nav
       const groups = [
         {
           label: t('grpMain'),
@@ -1297,13 +1606,12 @@
       document.getElementById('sidebarNav').innerHTML = groups.map(g => `
         <div class="nav-group-label">${esc(g.label)}</div>
         ${g.items.map(it => `
-          <button class="nav-item ${state.page === it.id ? 'active' : ''}" onclick="navTo('${it.id}')">
+          <button type="button" class="nav-item ${state.page === it.id ? 'active' : ''}" data-nav="${esc(it.id)}">
             ${ICONS[it.icon]}<span>${esc(it.label)}</span>
           </button>
         `).join('')}
       `).join('');
 
-      // Mobile Bottom Nav (1:1 my.hemis.uz 5-tab bar)
       const bItems = [
         { id: 'dashboard', icon: 'home', label: t('home') },
         { id: 'timetable', icon: 'calendar', label: t('timetable') },
@@ -1314,7 +1622,7 @@
       const activeBottom = ['subjects', 'eduplan', 'exams', 'payment', 'services', 'library'].includes(state.page)
         ? 'useful' : (state.page === 'settings' ? 'profile' : state.page);
       document.getElementById('bottomNav').innerHTML = bItems.map(it => `
-        <button class="bnav-btn ${activeBottom === it.id ? 'active' : ''}" onclick="navTo('${it.id}')">
+        <button type="button" class="bnav-btn ${activeBottom === it.id ? 'active' : ''}" data-nav="${esc(it.id)}">
           ${ICONS[it.icon]}<span>${esc(it.label)}</span>
         </button>
       `).join('');
@@ -1322,10 +1630,10 @@
 
     function renderLoginView() {
       const publicLinks = [
-        { title: 'Parolni tiklash', sub: 'my.hemis.uz/cancel-password', url: 'https://my.hemis.uz/cancel-password', bg: 'var(--warning-soft)', col: 'var(--warning)' },
-        { title: 'Diplom tekshirish', sub: 'my.hemis.uz/check-diplom', url: 'https://my.hemis.uz/check-diplom', bg: 'var(--brand-soft)', col: 'var(--brand)' },
-        { title: 'Shartnoma olish', sub: 'my.hemis.uz/get-contract', url: 'https://my.hemis.uz/get-contract', bg: 'var(--success-soft)', col: 'var(--success)' },
-        { title: 'Umumiy statistika', sub: 'my.hemis.uz/statistics', url: 'https://my.hemis.uz/statistics', bg: 'var(--violet-soft)', col: 'var(--violet)' },
+        { title: t('subPassReset'), sub: 'my.hemis.uz/cancel-password', url: 'https://my.hemis.uz/cancel-password', bg: 'var(--warning-soft)', col: 'var(--warning)' },
+        { title: t('subDiplomaCheck'), sub: 'my.hemis.uz/check-diplom', url: 'https://my.hemis.uz/check-diplom', bg: 'var(--brand-soft)', col: 'var(--brand)' },
+        { title: t('subGetContract'), sub: 'my.hemis.uz/get-contract', url: 'https://my.hemis.uz/get-contract', bg: 'var(--success-soft)', col: 'var(--success)' },
+        { title: t('subStats'), sub: 'my.hemis.uz/statistics', url: 'https://my.hemis.uz/statistics', bg: 'var(--violet-soft)', col: 'var(--violet)' },
       ];
       return `
         <div class="login-wrap stack">
@@ -1337,28 +1645,28 @@
                 <div style="font-size:12.5px;color:var(--text-secondary);">${esc(t('loginSub'))}</div>
               </div>
             </div>
-            <form onsubmit="handleLoginSubmit(event)">
+            <form id="loginForm">
               <div class="field">
                 <label>${esc(t('studentId'))}</label>
-                <input class="input" id="loginInput" type="text" autocomplete="username" placeholder="Masalan: 369231100376" required />
+                <input class="input" id="loginInput" type="text" autocomplete="username" placeholder="${esc(t('loginPlaceholder'))}" required />
               </div>
               <div class="field">
                 <label>${esc(t('password'))}</label>
                 <div class="input-wrap">
                   <input class="input" id="pwdInput" type="password" autocomplete="current-password" placeholder="••••••••" required style="padding-right:40px;" />
-                  <button type="button" class="eye-btn" onclick="const p=document.getElementById('pwdInput');p.type=p.type==='password'?'text':'password'">👁</button>
+                  <button type="button" class="eye-btn" data-act="toggle-pwd">👁</button>
                 </div>
               </div>
               <div id="loginErr" style="display:none;color:var(--danger);font-size:12.5px;margin-bottom:10px;font-weight:600;"></div>
               <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width:100%;height:44px;">${esc(t('signIn'))}</button>
-              ${state.authenticated ? `<button type="button" class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="state.ui.showLoginModal=false;render();">Bekor qilish</button>` : ''}
+              ${state.authenticated ? `<button type="button" class="btn btn-ghost" style="width:100%;margin-top:8px;" data-act="close-login">${esc(t('cancel'))}</button>` : ''}
             </form>
           </div>
           <div class="card">
             <div class="card-title">${esc(t('publicTools'))}</div>
             <div class="grid-2" style="gap:10px;">
               ${publicLinks.map(l => `
-                <button class="menu-tile" onclick="openExternal('${l.url}')">
+                <button type="button" class="menu-tile" data-external="${esc(l.url)}">
                   <div class="menu-icon" style="background:${l.bg};color:${l.col};">${ICONS.external}</div>
                   <div class="menu-tile-title">${esc(l.title)}</div>
                   <div class="menu-tile-sub">${esc(l.sub)}</div>
@@ -1370,54 +1678,82 @@
       `;
     }
 
+    function attThresholds() {
+      return {
+        warn: Number(state.settings.att_warning ?? 12),
+        crit: Number(state.settings.att_critical ?? 20),
+        limit: Number(state.settings.att_limit ?? 25),
+      };
+    }
+
     function attColor(pct) {
       if (pct === null || pct === undefined) return 'var(--text-tertiary)';
-      if (pct >= 20) return 'var(--danger)';
-      if (pct >= 12) return 'var(--warning)';
+      const th = attThresholds();
+      if (pct >= th.crit) return 'var(--danger)';
+      if (pct >= th.warn) return 'var(--warning)';
       return 'var(--success)';
     }
 
     function renderDashboard() {
       const p = state.profile || {};
-      const radar = computeRadarFromSchedule();
+      const th = attThresholds();
+      const radar = resolveRadar();
       const att = state.attendance.report || [];
       const maxAtt = att.reduce((m, r) => (r.percent !== null && r.percent > m ? r.percent : m), 0);
-      const riskCount = att.filter(r => r.percent !== null && r.percent >= 12).length;
+      const riskCount = att.filter(r => r.percent !== null && r.percent >= th.warn).length;
       const gpa = p.avg_gpa || ((state.eduplan.gpa_list || [])[0]?.gpa) || '-';
+      const safeAvatar = safeHttpUrl(p.image || '');
 
-      let radarTitle = 'Bugungi darslar';
-      let radarDesc = 'Hozircha jadval ma\'lumoti yo\'q';
+      let radarTitle = t('todaySchedule');
+      let radarDesc = t('noScheduleYet');
       if (radar.status === 'in_class' && radar.target) {
-        radarTitle = `Hozir: ${radar.target.subject}`;
-        radarDesc = `${radar.target.start_time}–${radar.target.end_time} • Xona: ${radar.target.room} • Tugashiga ${radar.left} daq`;
+        radarTitle = `${t('nowPrefix')}: ${radar.target.subject}`;
+        radarDesc = `${radar.target.start_time}–${radar.target.end_time} • ${t('roomLabel')}: ${radar.target.room || '-'} • ${tf('endsInMin', { m: radar.left })}`;
       } else if (radar.status === 'in_break' && radar.target) {
-        radarTitle = `Tanaffus • Keyingi: ${radar.target.subject}`;
-        radarDesc = `${radar.target.start_time} da boshlanadi (${radar.left} daq qoldi) • ${radar.target.room}`;
+        radarTitle = `${t('breakNext')}: ${radar.target.subject}`;
+        radarDesc = `${tf('startsAt', { t: radar.target.start_time, m: radar.left })} • ${radar.target.room || '-'}`;
       } else if (radar.status === 'before_classes' && radar.target) {
-        radarTitle = `Birinchi dars: ${radar.target.subject}`;
-        radarDesc = `${radar.target.start_time} da (${radar.left} daq qoldi) • ${radar.target.room}`;
+        radarTitle = `${t('firstClass')}: ${radar.target.subject}`;
+        radarDesc = `${tf('atTimeLeft', { t: radar.target.start_time, m: radar.left })} • ${radar.target.room || '-'}`;
       } else if (radar.status === 'after_classes') {
-        radarTitle = 'Bugungi darslar yakunlandi';
-        radarDesc = `Jami ${radar.lessons.length} juftlik dars`;
+        radarTitle = t('classesDone');
+        radarDesc = tf('totalPairs', { n: radar.lessons.length });
       } else if (radar.status === 'day_off') {
-        radarTitle = 'Bugun dars yo\'q';
-        radarDesc = 'Dam olish kuni';
+        radarTitle = t('noClassToday');
+        radarDesc = t('dayOffDesc');
       }
+
+      const secErrKeys = Object.keys(state.sectionErrors || {});
 
       return `
         <div class="stack">
+          ${state.authError ? `
+            <div class="offline-bar" style="background:var(--danger-soft);border-color:var(--danger);color:var(--danger);">
+              <div>
+                <div style="font-weight:700;">⚠️ ${esc(t('authErrTitle'))}</div>
+                <div style="font-size:11.5px;opacity:0.9;">${esc(t('authErrDesc'))}</div>
+              </div>
+              <button type="button" class="btn btn-sm btn-danger" data-act="open-login">${esc(t('reloginBtn'))}</button>
+            </div>` : ''}
+
           ${!state.liveApi ? `
             <div class="offline-bar">
               <span>⚡ ${esc(state.apiError ? t('snapshotMode') + ' — ' + state.apiError : t('snapshotMode'))}</span>
-              <button class="btn btn-sm btn-ghost" onclick="forceRefresh()">${esc('Yangilash')}</button>
+              <button type="button" class="btn btn-sm btn-ghost" data-act="refresh">${esc(t('refresh'))}</button>
+            </div>` : ''}
+
+          ${!state.authError && secErrKeys.length ? `
+            <div class="offline-bar">
+              <span>⚠️ ${esc(t('partialErrPrefix'))}: ${esc(secErrKeys.join(', '))}</span>
+              <button type="button" class="btn btn-sm btn-ghost" data-act="refresh">${esc(t('refresh'))}</button>
             </div>` : ''}
 
           <div class="hero-card">
             <div class="hero-top">
               <div style="display:flex;align-items:center;gap:12px;min-width:0;">
-                ${p.image ? `<img src="${esc(p.image)}" alt="" style="width:48px;height:48px;border-radius:12px;object-fit:cover;border:2px solid rgba(255,255,255,0.35);flex-shrink:0;" onerror="this.style.display='none'" />` : ''}
+                ${safeAvatar ? `<img src="${esc(safeAvatar)}" alt="" style="width:48px;height:48px;border-radius:12px;object-fit:cover;border:2px solid rgba(255,255,255,0.35);flex-shrink:0;" />` : ''}
                 <div style="min-width:0;">
-                  <div class="hero-name">${esc(p.full_name || 'Talaba')}</div>
+                  <div class="hero-name">${esc(p.full_name || t('student'))}</div>
                   <div class="hero-meta">${esc(p.university || '')}${p.faculty ? ' • ' + esc(p.faculty) : ''}</div>
                 </div>
               </div>
@@ -1431,7 +1767,7 @@
             </div>
           </div>
 
-          <div class="radar-banner" onclick="navTo('timetable')" style="cursor:pointer;">
+          <div class="radar-banner" data-nav="timetable" style="cursor:pointer;">
             <div>
               <div style="font-size:13.5px;font-weight:700;color:var(--brand);">${esc(radarTitle)}</div>
               <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${esc(radarDesc)}</div>
@@ -1440,25 +1776,25 @@
           </div>
 
           <div class="grid-4">
-            <div class="kpi-card" onclick="navTo('eduplan')">
+            <div class="kpi-card" data-nav="eduplan">
               <div class="kpi-label"><span>${esc(t('avgGpa'))}</span>${ICONS.award}</div>
               <div class="kpi-val">${esc(gpa)}</div>
-              <div class="kpi-sub">${esc(p.semester || 'Joriy')}</div>
+              <div class="kpi-sub">${esc(p.semester || t('current'))}</div>
             </div>
-            <div class="kpi-card" onclick="navTo('attendance')">
+            <div class="kpi-card" data-nav="attendance">
               <div class="kpi-label"><span>${esc(t('attRisk'))}</span>${ICONS.check}</div>
               <div class="kpi-val" style="color:${attColor(maxAtt)};">${esc(maxAtt)}%</div>
-              <div class="kpi-sub">${riskCount ? riskCount + ' ta fanda ogohlantirish' : 'Barcha fanlar me\'yorda'}</div>
+              <div class="kpi-sub">${riskCount ? tf('subjWarnCount', { n: riskCount }) : t('allOkAtt')}</div>
             </div>
-            <div class="kpi-card" onclick="navTo('subjects')">
+            <div class="kpi-card" data-nav="subjects">
               <div class="kpi-label"><span>${esc(t('dailyGrades'))}</span>${ICONS.book}</div>
               <div class="kpi-val">${state.dailyGrades.length}</div>
-              <div class="kpi-sub">${state.dailyGrades[0] ? 'Oxirgi: ' + esc(state.dailyGrades[0].grade) + ' ball' : 'Joriy semestr'}</div>
+              <div class="kpi-sub">${state.dailyGrades[0] ? tf('lastGradeSub', { g: state.dailyGrades[0].grade }) : t('currentSem')}</div>
             </div>
-            <div class="kpi-card" onclick="navTo('eduplan')">
+            <div class="kpi-card" data-nav="eduplan">
               <div class="kpi-label"><span>${esc(t('debts'))}</span>${ICONS.layers}</div>
               <div class="kpi-val" style="color:${state.debts.length ? 'var(--danger)' : 'var(--success)'};">${state.debts.length}</div>
-              <div class="kpi-sub">${state.debts.length ? 'Qayta topshirish' : 'Qarzdorlik yo\'q'}</div>
+              <div class="kpi-sub">${state.debts.length ? t('retraining') : t('noDebts')}</div>
             </div>
           </div>
 
@@ -1466,7 +1802,7 @@
             <div class="card">
               <div class="card-title">
                 <span>${esc(t('todaySchedule'))}</span>
-                <button class="btn btn-sm btn-ghost" onclick="navTo('timetable')">Barchasi</button>
+                <button type="button" class="btn btn-sm btn-ghost" data-nav="timetable">${esc(t('all'))}</button>
               </div>
               ${radar.lessons.length ? radar.lessons.map(l => `
                 <div class="row-item">
@@ -1482,7 +1818,7 @@
             <div class="card">
               <div class="card-title">
                 <span>${esc(t('recentGrades'))}</span>
-                <button class="btn btn-sm btn-ghost" onclick="navTo('subjects')">Barchasi</button>
+                <button type="button" class="btn btn-sm btn-ghost" data-nav="subjects">${esc(t('all'))}</button>
               </div>
               ${state.dailyGrades.length ? state.dailyGrades.slice(0, 5).map(g => `
                 <div class="row-item">
@@ -1499,12 +1835,12 @@
           <div class="card">
             <div class="card-title">${esc(t('quickMenus'))}</div>
             <div class="menu-grid">
-              <button class="menu-tile" onclick="navTo('subjects')"><div class="menu-icon" style="background:var(--brand-soft);color:var(--brand);">${ICONS.book}</div><div class="menu-tile-title">${esc(t('subjects'))}</div><div class="menu-tile-sub">JN, ON, YN, resurslar</div></button>
-              <button class="menu-tile" onclick="navTo('payment')"><div class="menu-icon" style="background:var(--success-soft);color:var(--success);">${ICONS.wallet}</div><div class="menu-tile-title">${esc(t('payment'))}</div><div class="menu-tile-sub">Kontrakt, stipendiya, ijara</div></button>
-              <button class="menu-tile" onclick="navTo('exams')"><div class="menu-icon" style="background:var(--warning-soft);color:var(--warning);">${ICONS.award}</div><div class="menu-tile-title">${esc(t('exams'))}</div><div class="menu-tile-sub">Imtihon sanalari va xonalar</div></button>
-              <button class="menu-tile" onclick="navTo('eduplan')"><div class="menu-icon" style="background:var(--violet-soft);color:var(--violet);">${ICONS.layers}</div><div class="menu-tile-title">${esc(t('eduplan'))}</div><div class="menu-tile-sub">Semestrlar va GPA</div></button>
-              <button class="menu-tile" onclick="navTo('services')"><div class="menu-icon" style="background:var(--teal-soft);color:var(--teal);">${ICONS.file}</div><div class="menu-tile-title">${esc(t('services'))}</div><div class="menu-tile-sub">Ketish varaqasi, apellyatsiya</div></button>
-              <button class="menu-tile" onclick="navTo('library')"><div class="menu-icon" style="background:var(--brand-soft);color:var(--brand);">${ICONS.search}</div><div class="menu-tile-title">${esc(t('library'))}</div><div class="menu-tile-sub">Unilibrary elektron baza</div></button>
+              <button type="button" class="menu-tile" data-nav="subjects"><div class="menu-icon" style="background:var(--brand-soft);color:var(--brand);">${ICONS.book}</div><div class="menu-tile-title">${esc(t('subjects'))}</div><div class="menu-tile-sub">${esc(t('quickDescSubjects'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="payment"><div class="menu-icon" style="background:var(--success-soft);color:var(--success);">${ICONS.wallet}</div><div class="menu-tile-title">${esc(t('payment'))}</div><div class="menu-tile-sub">${esc(t('quickDescPayment'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="exams"><div class="menu-icon" style="background:var(--warning-soft);color:var(--warning);">${ICONS.award}</div><div class="menu-tile-title">${esc(t('exams'))}</div><div class="menu-tile-sub">${esc(t('quickDescExams'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="eduplan"><div class="menu-icon" style="background:var(--violet-soft);color:var(--violet);">${ICONS.layers}</div><div class="menu-tile-title">${esc(t('eduplan'))}</div><div class="menu-tile-sub">${esc(t('quickDescEduplan'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="services"><div class="menu-icon" style="background:var(--teal-soft);color:var(--teal);">${ICONS.file}</div><div class="menu-tile-title">${esc(t('services'))}</div><div class="menu-tile-sub">${esc(t('quickDescServices'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="library"><div class="menu-icon" style="background:var(--brand-soft);color:var(--brand);">${ICONS.search}</div><div class="menu-tile-title">${esc(t('library'))}</div><div class="menu-tile-sub">${esc(t('quickDescLibrary'))}</div></button>
             </div>
           </div>
         </div>
@@ -1522,15 +1858,15 @@
         <div class="stack">
           ${weeks.length > 1 ? `
             <div class="card" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-              <span style="font-size:12.5px;font-weight:700;color:var(--text-secondary);">Hafta:</span>
-              <select class="input" style="height:36px;max-width:260px;" onchange="state.ui.selectedWeekId=this.value;render();">
-                ${weeks.map(w => `<option value="${esc(w.id)}" ${activeWeek && activeWeek.id === w.id ? 'selected' : ''}>${esc(w.label)}${w.current ? ' (Joriy)' : ''}</option>`).join('')}
+              <span style="font-size:12.5px;font-weight:700;color:var(--text-secondary);">${esc(t('weekLabel'))}:</span>
+              <select class="input" data-change="week" style="height:36px;max-width:260px;">
+                ${weeks.map(w => `<option value="${esc(w.id)}" ${activeWeek && activeWeek.id === w.id ? 'selected' : ''}>${esc(w.label)}${w.current ? ' (' + esc(t('current')) + ')' : ''}</option>`).join('')}
               </select>
             </div>
           ` : ''}
           <div class="tabs">
             ${days.map(d => `
-              <button class="tab-btn ${curDay === d ? 'active' : ''}" onclick="state.ui.day=${d};render();">
+              <button type="button" class="tab-btn ${curDay === d ? 'active' : ''}" data-act="set-day" data-val="${d}">
                 ${esc(I18N[state.lang].daysShort[d])}
               </button>
             `).join('')}
@@ -1538,7 +1874,7 @@
           <div class="card">
             <div class="card-title">
               <span>${esc(I18N[state.lang].days[curDay])}</span>
-              <span class="pill pill-brand">${lessons.length} juftlik</span>
+              <span class="pill pill-brand">${lessons.length} ${esc(t('pairUnit'))}</span>
             </div>
             ${lessons.length ? lessons.map((l, idx) => `
               <div class="row-item" style="align-items:flex-start;">
@@ -1549,7 +1885,7 @@
                   <div style="min-width:0;">
                     <div style="font-weight:700;font-size:14px;">${esc(l.subject)}</div>
                     <div style="font-size:12px;color:var(--text-secondary);margin-top:3px;">
-                      <span class="pill pill-neutral" style="padding:1px 7px;font-size:11px;">${esc(l.type || 'Dars')}</span>
+                      <span class="pill pill-neutral" style="padding:1px 7px;font-size:11px;">${esc(l.type || t('lessonType'))}</span>
                       • 🏛 ${esc(l.room || '-')}
                     </div>
                     <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">👨‍🏫 ${esc(l.teacher || '-')}</div>
@@ -1565,40 +1901,42 @@
 
     function renderAttendance() {
       const tab = state.ui.attTab;
+      const th = attThresholds();
       const rep = state.attendance.report || [];
       const rec = state.attendance.recent || [];
       const totalMissed = rep.reduce((s, r) => s + (Number(r.total_missed) || 0), 0);
       const totalExc = rep.reduce((s, r) => s + (Number(r.excused) || 0), 0);
       const totalUnexc = rep.reduce((s, r) => s + (Number(r.unexcused) || 0), 0);
-      const warnCount = rep.filter(r => r.percent !== null && r.percent >= 12).length;
+      const warnCount = rep.filter(r => r.percent !== null && r.percent >= th.warn).length;
+      const h = t('hoursShort');
       return `
         <div class="stack">
           <div class="grid-4">
-            <div class="kpi-card"><div class="kpi-label"><span>Jami qoldirilgan</span></div><div class="kpi-val">${totalMissed} s</div><div class="kpi-sub">Semestr bo'yicha</div></div>
-            <div class="kpi-card"><div class="kpi-label"><span>Sababsiz</span></div><div class="kpi-val" style="color:${totalUnexc ? 'var(--danger)' : 'var(--success)'};">${totalUnexc} s</div><div class="kpi-sub">Sababli: ${totalExc} s</div></div>
-            <div class="kpi-card"><div class="kpi-label"><span>Xavf ostida (≥12%)</span></div><div class="kpi-val" style="color:${warnCount ? 'var(--warning)' : 'var(--success)'};">${warnCount}</div><div class="kpi-sub">${rep.length} ta fandan</div></div>
-            <div class="kpi-card"><div class="kpi-label"><span>Chegara</span></div><div class="kpi-val">25%</div><div class="kpi-sub">Ogohlantirish: ${esc(state.settings.alert_threshold || 15)}%</div></div>
+            <div class="kpi-card"><div class="kpi-label"><span>${esc(t('totalMissed'))}</span></div><div class="kpi-val">${totalMissed} ${esc(h)}</div><div class="kpi-sub">${esc(t('bySem'))}</div></div>
+            <div class="kpi-card"><div class="kpi-label"><span>${esc(t('unexcused'))}</span></div><div class="kpi-val" style="color:${totalUnexc ? 'var(--danger)' : 'var(--success)'};">${totalUnexc} ${esc(h)}</div><div class="kpi-sub">${esc(t('excusedPrefix'))}: ${totalExc} ${esc(h)}</div></div>
+            <div class="kpi-card"><div class="kpi-label"><span>${esc(t('atRiskLabel'))} (≥${th.warn}%)</span></div><div class="kpi-val" style="color:${warnCount ? 'var(--warning)' : 'var(--success)'};">${warnCount}</div><div class="kpi-sub">${tf('ofSubjCount', { n: rep.length })}</div></div>
+            <div class="kpi-card"><div class="kpi-label"><span>${esc(t('limitLabel'))}</span></div><div class="kpi-val">${th.limit}%</div><div class="kpi-sub">${esc(t('alertPrefix'))}: ${esc(state.settings.alert_threshold || 15)}%</div></div>
           </div>
           <div class="tabs">
-            <button class="tab-btn ${tab === 'subject' ? 'active' : ''}" onclick="state.ui.attTab='subject';render();">${esc(t('bySubject'))}</button>
-            <button class="tab-btn ${tab === 'recent' ? 'active' : ''}" onclick="state.ui.attTab='recent';render();">${esc(t('detailsLog'))}</button>
-            <button class="tab-btn ${tab === 'qr' ? 'active' : ''}" onclick="state.ui.attTab='qr';render();">${esc(t('qrAttend'))}</button>
+            <button type="button" class="tab-btn ${tab === 'subject' ? 'active' : ''}" data-act="set-att-tab" data-val="subject">${esc(t('bySubject'))}</button>
+            <button type="button" class="tab-btn ${tab === 'recent' ? 'active' : ''}" data-act="set-att-tab" data-val="recent">${esc(t('detailsLog'))}</button>
+            <button type="button" class="tab-btn ${tab === 'qr' ? 'active' : ''}" data-act="set-att-tab" data-val="qr">${esc(t('qrAttend'))}</button>
           </div>
           ${tab === 'subject' ? `
             <div class="stack">
               ${rep.length ? rep.map(r => {
                 const pct = r.percent ?? 0;
                 const col = attColor(r.percent);
-                const w = Math.min(100, Math.round((pct / 25) * 100));
+                const w = Math.min(100, Math.round((pct / Math.max(1, th.limit)) * 100));
                 return `
                   <div class="card">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;">
                       <div>
                         <div style="font-weight:700;font-size:14px;">${esc(r.subject)}</div>
-                        <div style="font-size:12px;color:var(--text-secondary);">Auditoriya soati: ${esc(r.total_hours)} s • Sababli: ${esc(r.excused)} s • Sababsiz: ${esc(r.unexcused)} s</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">${esc(t('auditoryHours'))}: ${esc(r.total_hours)} ${esc(h)} • ${esc(t('excusedWord'))}: ${esc(r.excused)} ${esc(h)} • ${esc(t('unexcusedWord'))}: ${esc(r.unexcused)} ${esc(h)}</div>
                       </div>
                       <span class="pill" style="background:color-mix(in srgb, ${col} 14%, transparent);color:${col};font-weight:700;">
-                        ${r.percent === null ? '?' : esc(r.percent) + '%'} (${esc(r.total_missed)} s)
+                        ${r.percent === null ? '?' : esc(r.percent) + '%'} (${esc(r.total_missed)} ${esc(h)})
                       </span>
                     </div>
                     <div class="progress-track">
@@ -1606,7 +1944,7 @@
                     </div>
                     <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-tertiary);margin-top:5px;">
                       <span>${esc(r.status || '')}</span>
-                      <span>25% limit</span>
+                      <span>${th.limit}% ${esc(t('limitWord'))}</span>
                     </div>
                   </div>
                 `;
@@ -1618,14 +1956,14 @@
                 const isExc = x.excused === 'Ha';
                 const isPart = String(x.excused || '').startsWith('Qisman');
                 const pillCls = isExc ? 'pill-success' : (isPart ? 'pill-warning' : 'pill-danger');
-                const pillLbl = isExc ? 'Sababli' : (isPart ? esc(x.excused) : 'Sababsiz');
+                const pillLbl = isExc ? t('excusedWord') : (isPart ? esc(x.excused) : t('unexcusedWord'));
                 return `
                 <div class="row-item">
                   <div>
                     <div style="font-weight:700;">${esc(x.subject)}</div>
                     <div style="font-size:12px;color:var(--text-secondary);">${esc(x.date)} • ${esc(x.type)} • ${esc(x.teacher || '')}</div>
                   </div>
-                  <span class="pill ${pillCls}">${esc(x.hours)} s • ${pillLbl}</span>
+                  <span class="pill ${pillCls}">${esc(x.hours)} ${esc(h)} • ${pillLbl}</span>
                 </div>
               `;
               }).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`}
@@ -1634,14 +1972,14 @@
             <div class="card" style="max-width:460px;">
               <div class="card-title">${esc(t('qrAttend'))}</div>
               <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:14px;">
-                Dars xonasidagi HEMIS QR-kodini skanerlang yoki kodni qo'lda kiriting.
+                ${esc(t('qrHint'))}
               </p>
-              <button class="btn btn-primary" style="width:100%;margin-bottom:12px;" onclick="triggerQrScan()">
-                ${ICONS.qr} <span>QR-kodni skanerlash</span>
+              <button type="button" class="btn btn-primary" style="width:100%;margin-bottom:12px;" data-act="scan-qr">
+                ${ICONS.qr} <span>${esc(t('qrScanBtn'))}</span>
               </button>
               <div style="display:flex;gap:8px;">
-                <input class="input" id="qrManualInput" placeholder="QR kod matni..." />
-                <button class="btn btn-ghost" onclick="handleQrSubmit(document.getElementById('qrManualInput').value.trim())">Yuborish</button>
+                <input class="input" id="qrManualInput" placeholder="${esc(t('qrInputPh'))}" />
+                <button type="button" class="btn btn-ghost" data-act="submit-qr">${esc(t('sendBtn'))}</button>
               </div>
             </div>
           `}
@@ -1669,7 +2007,7 @@
             const avg = nums.length ? (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(1) : '-';
             return `
               <div class="card">
-                <div class="card-title"><span>${esc(subj)}</span><span class="pill pill-brand">O'rtacha: ${esc(avg)}</span></div>
+                <div class="card-title"><span>${esc(subj)}</span><span class="pill pill-brand">${esc(t('avgWord'))}: ${esc(avg)}</span></div>
                 ${items.slice(0, 8).map(g => `
                   <div class="row-item">
                     <div style="font-size:12.5px;color:var(--text-secondary);">${esc(g.lesson_date)} • ${esc(g.type)} ${g.pair ? '• ' + esc(g.pair) : ''}</div>
@@ -1692,19 +2030,19 @@
         }
         body = `
           <div style="display:flex;gap:8px;margin-bottom:10px;">
-            <button class="btn btn-sm ${mode === 'recent' ? 'btn-primary' : 'btn-ghost'}" onclick="state.ui.dailyMode='recent';render();">${esc(t('recent'))}</button>
-            <button class="btn btn-sm ${mode === 'subject' ? 'btn-primary' : 'btn-ghost'}" onclick="state.ui.dailyMode='subject';render();">${esc(t('bySubject'))}</button>
+            <button type="button" class="btn btn-sm ${mode === 'recent' ? 'btn-primary' : 'btn-ghost'}" data-act="set-daily-mode" data-val="recent">${esc(t('recent'))}</button>
+            <button type="button" class="btn btn-sm ${mode === 'subject' ? 'btn-primary' : 'btn-ghost'}" data-act="set-daily-mode" data-val="subject">${esc(t('bySubject'))}</button>
           </div>
           <div class="stack">${listHtml}</div>
         `;
       } else if (tab === 'perf') {
         const list = state.grades[curSem] || [];
         body = `
-          ${semKeys.length ? `<div class="tabs">${semKeys.map(s => `<button class="tab-btn ${curSem === s ? 'active' : ''}" data-sem="${esc(s)}" onclick="state.ui.selectedSem=this.dataset.sem;render();">${esc(s)}</button>`).join('')}</div>` : ''}
+          ${semKeys.length ? `<div class="tabs">${semKeys.map(s => `<button type="button" class="tab-btn ${curSem === s ? 'active' : ''}" data-act="set-sem" data-val="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
           <div class="card">
             ${list.length ? `
               <div class="table-wrap"><table>
-                <thead><tr><th>Fan</th><th>JN</th><th>ON</th><th>YN</th><th>Jami</th></tr></thead>
+                <thead><tr><th>${esc(t('thSubj'))}</th><th>JN</th><th>ON</th><th>YN</th><th>${esc(t('thTotal'))}</th></tr></thead>
                 <tbody>${list.map(x => `
                   <tr>
                     <td style="font-weight:600;">${esc(x.subject)}</td>
@@ -1726,34 +2064,34 @@
         body = `
           ${subjNames.length ? `
             <div class="card" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
-              <span style="font-size:12.5px;font-weight:700;color:var(--text-secondary);">Fan bo'yicha filter:</span>
-              <select class="input" style="height:36px;max-width:280px;" onchange="state.ui.subjFilter=this.value;render();">
-                <option value="">Barcha fanlar (${allResources.length})</option>
+              <span style="font-size:12.5px;font-weight:700;color:var(--text-secondary);">${esc(t('filterSubj'))}:</span>
+              <select class="input" data-change="subj-filter" style="height:36px;max-width:280px;">
+                <option value="">${esc(tf('allSubjsCount', { n: allResources.length }))}</option>
                 ${subjNames.map(n => `<option value="${esc(n)}" ${sf === n ? 'selected' : ''}>${esc(n)}</option>`).join('')}
               </select>
             </div>
           ` : ''}
           <div class="grid-2">
             <div class="card">
-              <div class="card-title"><span>Topshiriqlar</span><span class="pill pill-brand">${tasks.length}</span></div>
+              <div class="card-title"><span>${esc(t('tasks'))}</span><span class="pill pill-brand">${tasks.length}</span></div>
               ${tasks.length ? tasks.map(tk => `
                 <div class="row-item" style="align-items:flex-start;">
                   <div>
                     <div style="font-weight:700;">${esc(tk.name)}</div>
-                    <div style="font-size:12px;color:var(--text-secondary);">${esc(tk.subject)} • Muddat: ${esc(tk.deadline)}</div>
+                    <div style="font-size:12px;color:var(--text-secondary);">${esc(tk.subject)} • ${esc(t('deadline'))}: ${esc(tk.deadline)}</div>
                   </div>
                   <span class="pill ${tk.submitted ? 'pill-success' : 'pill-warning'}">${esc(tk.mark)} / ${esc(tk.max_ball)}</span>
                 </div>
               `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`}
             </div>
             <div class="card">
-              <div class="card-title"><span>O'quv resurslari</span><span class="pill pill-violet">${resources.length}</span></div>
+              <div class="card-title"><span>${esc(t('resources'))}</span><span class="pill pill-violet">${resources.length}</span></div>
               ${resources.slice(0, 60).map(rs => `
                 <div class="row-item" style="align-items:flex-start;">
                   <div style="min-width:0;">
                     <div style="font-weight:700;">${esc(rs.name)}</div>
                     <div style="font-size:12px;color:var(--text-secondary);">${esc(rs.subject)} • ${esc(rs.training_type)}${rs.teacher ? ' • ' + esc(rs.teacher) : ''}</div>
-                    ${(rs.files || []).map(f => `<div style="margin-top:4px;"><a href="javascript:void(0)" data-url="${esc(f.url)}" onclick="openExternal(this.dataset.url)">📎 ${esc(f.name)}</a></div>`).join('')}
+                    ${(rs.files || []).map(f => `<div style="margin-top:4px;"><button type="button" class="btn btn-sm btn-ghost" data-external="${esc(f.url)}">📎 ${esc(f.name)}</button></div>`).join('')}
                   </div>
                 </div>
               `).join('') || `<div class="empty-box">${esc(t('noData'))}</div>`}
@@ -1765,9 +2103,9 @@
       return `
         <div class="stack">
           <div class="tabs">
-            <button class="tab-btn ${tab === 'daily' ? 'active' : ''}" onclick="state.ui.subjTab='daily';render();">${esc(t('dailyGrades'))}</button>
-            <button class="tab-btn ${tab === 'perf' ? 'active' : ''}" onclick="state.ui.subjTab='perf';render();">${esc(t('performance'))}</button>
-            <button class="tab-btn ${tab === 'res' ? 'active' : ''}" onclick="state.ui.subjTab='res';render();if(state.liveApi)loadSection('subject_detail');">${esc(t('resourcesTasks'))}</button>
+            <button type="button" class="tab-btn ${tab === 'daily' ? 'active' : ''}" data-act="set-subj-tab" data-val="daily">${esc(t('dailyGrades'))}</button>
+            <button type="button" class="tab-btn ${tab === 'perf' ? 'active' : ''}" data-act="set-subj-tab" data-val="perf">${esc(t('performance'))}</button>
+            <button type="button" class="tab-btn ${tab === 'res' ? 'active' : ''}" data-act="set-subj-tab" data-val="res">${esc(t('resourcesTasks'))}</button>
           </div>
           ${body}
         </div>
@@ -1781,12 +2119,12 @@
       return `
         <div class="stack">
           <div class="card">
-            <div class="card-title"><span>GPA va kurslar tarixi</span><span class="pill pill-brand">${gpas.length}</span></div>
+            <div class="card-title"><span>${esc(t('gpaHistory'))}</span><span class="pill pill-brand">${gpas.length}</span></div>
             ${gpas.length ? gpas.map(g => `
               <div class="row-item">
                 <div>
                   <div style="font-weight:700;">${esc(g.course)} (${esc(g.year)})</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">Kredit: ${esc(g.credit_sum)} • Fanlar: ${esc(g.subjects)} • Qarzdorlik: ${esc(g.debt_subjects)}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">${esc(t('thCredit'))}: ${esc(g.credit_sum)} • ${esc(t('thSubj'))}: ${esc(g.subjects)} • ${esc(t('debts'))}: ${esc(g.debt_subjects)}</div>
                 </div>
                 <span class="pill pill-success" style="font-size:14px;">GPA ${esc(g.gpa)}</span>
               </div>
@@ -1794,23 +2132,23 @@
           </div>
 
           <div class="card">
-            <div class="card-title"><span>Akademik qarzdorliklar (Cheklovlar)</span><span class="pill ${debts.length ? 'pill-danger' : 'pill-success'}">${debts.length}</span></div>
+            <div class="card-title"><span>${esc(t('debtsTitle'))}</span><span class="pill ${debts.length ? 'pill-danger' : 'pill-success'}">${debts.length}</span></div>
             ${debts.length ? debts.map(d => `
               <div class="row-item">
                 <div>
                   <div style="font-weight:700;">${esc(d.subject)}</div>
                   <div style="font-size:12px;color:var(--text-secondary);">${esc(d.semester)} • JN:${esc(d.jn)} ON:${esc(d.on)} YN:${esc(d.yn)}</div>
                 </div>
-                <span class="pill pill-danger">${esc(d.total)} ball</span>
+                <span class="pill pill-danger">${esc(d.total)} ${esc(t('thScore'))}</span>
               </div>
-            `).join('') : `<div class="empty-box">✅ Akademik qarzdorliklar topilmadi</div>`}
+            `).join('') : `<div class="empty-box">${esc(t('noDebtsCheck'))}</div>`}
           </div>
 
           ${Object.entries(sems).map(([semName, list]) => `
             <div class="card">
-              <div class="card-title"><span>${esc(semName)} — O'quv reja</span><span class="pill pill-neutral">${list.length} fan</span></div>
+              <div class="card-title"><span>${esc(semName)} — ${esc(t('eduplanWord'))}</span><span class="pill pill-neutral">${list.length}</span></div>
               <div class="table-wrap"><table>
-                <thead><tr><th>Fan</th><th>Kredit</th><th>Soat</th><th>Turi</th><th>Ball</th></tr></thead>
+                <thead><tr><th>${esc(t('thSubj'))}</th><th>${esc(t('thCredit'))}</th><th>${esc(t('thHours'))}</th><th>${esc(t('thType'))}</th><th>${esc(t('thScore'))}</th></tr></thead>
                 <tbody>${list.map(s => `
                   <tr>
                     <td style="font-weight:600;">${esc(s.subject)}</td>
@@ -1851,29 +2189,29 @@
       return `
         <div class="stack">
           <div class="tabs">
-            <button class="tab-btn ${tab === 'contract' ? 'active' : ''}" onclick="state.ui.payTab='contract';render();">${esc(t('contract'))}</button>
-            <button class="tab-btn ${tab === 'stipend' ? 'active' : ''}" onclick="state.ui.payTab='stipend';render();">${esc(t('stipend'))}</button>
-            <button class="tab-btn ${tab === 'subsidy' ? 'active' : ''}" onclick="state.ui.payTab='subsidy';render();">${esc(t('subsidy'))}</button>
-            <button class="tab-btn ${tab === 'dorm' ? 'active' : ''}" onclick="state.ui.payTab='dorm';render();">${esc(t('dorm'))}</button>
-            <button class="tab-btn ${tab === 'credit' ? 'active' : ''}" onclick="state.ui.payTab='credit';render();">${esc(t('creditMod'))}</button>
-            <button class="tab-btn ${tab === 'rent' ? 'active' : ''}" onclick="state.ui.payTab='rent';render();">${esc(t('rent'))}</button>
+            <button type="button" class="tab-btn ${tab === 'contract' ? 'active' : ''}" data-act="set-pay-tab" data-val="contract">${esc(t('contract'))}</button>
+            <button type="button" class="tab-btn ${tab === 'stipend' ? 'active' : ''}" data-act="set-pay-tab" data-val="stipend">${esc(t('stipend'))}</button>
+            <button type="button" class="tab-btn ${tab === 'subsidy' ? 'active' : ''}" data-act="set-pay-tab" data-val="subsidy">${esc(t('subsidy'))}</button>
+            <button type="button" class="tab-btn ${tab === 'dorm' ? 'active' : ''}" data-act="set-pay-tab" data-val="dorm">${esc(t('dorm'))}</button>
+            <button type="button" class="tab-btn ${tab === 'credit' ? 'active' : ''}" data-act="set-pay-tab" data-val="credit">${esc(t('creditMod'))}</button>
+            <button type="button" class="tab-btn ${tab === 'rent' ? 'active' : ''}" data-act="set-pay-tab" data-val="rent">${esc(t('rent'))}</button>
           </div>
           <div class="card">
             ${tab === 'contract' ? renderList(f.contracts, c => `
               <div class="row-item">
                 <div>
                   <div style="font-weight:700;">${esc(c.year)} (${esc(c.type)})</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">Summa: ${esc(c.summa)} • To'langan: ${esc(c.paid)}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">${esc(t('summa'))}: ${esc(c.summa)} • ${esc(t('paid'))}: ${esc(c.paid)}</div>
                 </div>
-                <span class="pill pill-warning">Qarz: ${esc(c.debt)}</span>
+                <span class="pill pill-warning">${esc(t('debt'))}: ${esc(c.debt)}</span>
               </div>
             `) : tab === 'stipend' ? renderList(f.stipends, s => `
               <div class="row-item">
                 <div>
                   <div style="font-weight:700;">${esc(s.month)} — ${esc(s.type)}</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">Karta: ${esc(s.card)}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">${esc(t('card'))}: ${esc(s.card)}</div>
                 </div>
-                <span class="pill pill-success">${esc(s.amount)} so'm</span>
+                <span class="pill pill-success">${esc(s.amount)} ${esc(t('som'))}</span>
               </div>
             `) : tab === 'subsidy' ? renderList(f.subsidies, s => `
               <div class="row-item">
@@ -1881,35 +2219,27 @@
                   <div style="font-weight:700;">${esc(s.month)}</div>
                   <div style="font-size:12px;color:var(--text-secondary);">${esc(s.address || '')} ${s.paid_at ? '• ' + esc(s.paid_at) : ''}</div>
                 </div>
-                <span class="pill pill-success">${esc(s.amount)} so'm</span>
+                <span class="pill pill-success">${esc(s.amount)} ${esc(t('som'))}</span>
               </div>
             `) : tab === 'dorm' ? renderList(f.residence, r => `
               <div class="row-item">
-                <div><div style="font-weight:700;">${esc(r.year)} ${esc(r.number)}</div><div style="font-size:12px;color:var(--text-secondary);">Summa: ${esc(r.summa)} • To'langan: ${esc(r.paid)}</div></div>
-                <span class="pill pill-warning">Qarz: ${esc(r.debt)}</span>
+                <div><div style="font-weight:700;">${esc(r.year)} ${esc(r.number)}</div><div style="font-size:12px;color:var(--text-secondary);">${esc(t('summa'))}: ${esc(r.summa)} • ${esc(t('paid'))}: ${esc(r.paid)}</div></div>
+                <span class="pill pill-warning">${esc(t('debt'))}: ${esc(r.debt)}</span>
               </div>
             `) : tab === 'credit' ? renderList(f.credit_modules, c => `
               <div class="row-item">
-                <div><div style="font-weight:700;">${esc(c.subject)}</div><div style="font-size:12px;color:var(--text-secondary);">Summa: ${esc(c.summa)} • To'langan: ${esc(c.paid)}</div></div>
-                <span class="pill pill-warning">Qarz: ${esc(c.debt)}</span>
+                <div><div style="font-weight:700;">${esc(c.subject)}</div><div style="font-size:12px;color:var(--text-secondary);">${esc(t('summa'))}: ${esc(c.summa)} • ${esc(t('paid'))}: ${esc(c.paid)}</div></div>
+                <span class="pill pill-warning">${esc(t('debt'))}: ${esc(c.debt)}</span>
               </div>
             `) : renderList(f.rents, r => `
               <div class="row-item">
                 <div><div style="font-weight:700;">${esc(r.address)}</div><div style="font-size:12px;color:var(--text-secondary);">${esc(r.landlord)} • ${esc(r.start_date)} – ${esc(r.end_date)}</div></div>
-                <span class="pill pill-brand">${esc(r.price)} so'm</span>
+                <span class="pill pill-brand">${esc(r.price)} ${esc(t('som'))}</span>
               </div>
             `)}
           </div>
         </div>
       `;
-    }
-
-    function downloadHemisDoc(fileUrl, fallbackLink) {
-      if (API_BASE && UID && SIG && fileUrl) {
-        openExternal(`${API_BASE}/api/document-download?url=${encodeURIComponent(fileUrl)}&uid=${encodeURIComponent(UID)}&sig=${encodeURIComponent(SIG)}`);
-        return;
-      }
-      if (fallbackLink || fileUrl) openExternal(fallbackLink || fileUrl);
     }
 
     function renderServices() {
@@ -1920,11 +2250,11 @@
       return `
         <div class="stack">
           <div class="tabs">
-            <button class="tab-btn ${tab === 'documents' ? 'active' : ''}" onclick="state.ui.srvTab='documents';render();">${esc(t('documents'))}</button>
-            <button class="tab-btn ${tab === 'references' ? 'active' : ''}" onclick="state.ui.srvTab='references';render();">${esc(t('references'))}</button>
-            <button class="tab-btn ${tab === 'decrees' ? 'active' : ''}" onclick="state.ui.srvTab='decrees';render();">${esc(t('decrees'))}</button>
-            <button class="tab-btn ${tab === 'clearance' ? 'active' : ''}" onclick="state.ui.srvTab='clearance';render();">${esc(t('clearance'))}</button>
-            <button class="tab-btn ${tab === 'appeals' ? 'active' : ''}" onclick="state.ui.srvTab='appeals';render();">${esc(t('appeals'))}</button>
+            <button type="button" class="tab-btn ${tab === 'documents' ? 'active' : ''}" data-act="set-srv-tab" data-val="documents">${esc(t('documents'))}</button>
+            <button type="button" class="tab-btn ${tab === 'references' ? 'active' : ''}" data-act="set-srv-tab" data-val="references">${esc(t('references'))}</button>
+            <button type="button" class="tab-btn ${tab === 'decrees' ? 'active' : ''}" data-act="set-srv-tab" data-val="decrees">${esc(t('decrees'))}</button>
+            <button type="button" class="tab-btn ${tab === 'clearance' ? 'active' : ''}" data-act="set-srv-tab" data-val="clearance">${esc(t('clearance'))}</button>
+            <button type="button" class="tab-btn ${tab === 'appeals' ? 'active' : ''}" data-act="set-srv-tab" data-val="appeals">${esc(t('appeals'))}</button>
           </div>
           <div class="card">
             ${tab === 'documents' ? ((docs.documents || []).length ? docs.documents.map(d => `
@@ -1933,15 +2263,15 @@
                   <div style="font-weight:700;">${esc(d.name)}</div>
                   <div style="font-size:12px;color:var(--text-secondary);">${(d.attributes || []).map(a => esc(a.label + ': ' + a.value)).join(' • ')}</div>
                 </div>
-                ${(d.file || d.link) ? `<button class="btn btn-sm btn-primary" data-file="${esc(d.file)}" data-link="${esc(d.link)}" onclick="downloadHemisDoc(this.dataset.file, this.dataset.link)">📄 Yuklash</button>` : ''}
+                ${(d.file || d.link) ? `<button type="button" class="btn btn-sm btn-primary" data-dl-file="${esc(d.file || '')}" data-dl-link="${esc(d.link || '')}">📄 ${esc(t('downloadDoc'))}</button>` : ''}
               </div>
             `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`) : tab === 'references' ? ((docs.references || []).length ? docs.references.map(r => `
               <div class="row-item">
                 <div>
-                  <div style="font-weight:700;">Ma'lumotnoma № ${esc(r.number)}</div>
+                  <div style="font-weight:700;">${esc(t('referenceNum'))} ${esc(r.number)}</div>
                   <div style="font-size:12px;color:var(--text-secondary);">${esc(r.department)} • ${esc(r.level)} • ${esc(r.semester)} ${r.date ? '• ' + esc(r.date) : ''}</div>
                 </div>
-                ${r.file ? `<button class="btn btn-sm btn-primary" data-file="${esc(r.file)}" onclick="downloadHemisDoc(this.dataset.file, '')">📄 PDF</button>` : ''}
+                ${r.file ? `<button type="button" class="btn btn-sm btn-primary" data-dl-file="${esc(r.file)}" data-dl-link="">📄 PDF</button>` : ''}
               </div>
             `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`) : tab === 'decrees' ? ((docs.decrees || []).length ? docs.decrees.map(dc => `
               <div class="row-item" style="align-items:flex-start;">
@@ -1949,7 +2279,7 @@
                   <div style="font-weight:700;">№ ${esc(dc.number)} — ${esc(dc.name)}</div>
                   <div style="font-size:12px;color:var(--text-secondary);">${esc(dc.decree_type)} • ${esc(dc.department)} ${dc.date ? '• ' + esc(dc.date) : ''}</div>
                 </div>
-                ${dc.file ? `<button class="btn btn-sm btn-ghost" data-file="${esc(dc.file)}" onclick="downloadHemisDoc(this.dataset.file, '')">📄 PDF</button>` : ''}
+                ${dc.file ? `<button type="button" class="btn btn-sm btn-ghost" data-dl-file="${esc(dc.file)}" data-dl-link="">📄 PDF</button>` : ''}
               </div>
             `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`) : tab === 'clearance' ? (clr.length ? clr.map(c => `
               <div class="row-item">
@@ -1959,13 +2289,13 @@
             `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`) : `
               <div class="stack">
                 <div>
-                  <div style="font-weight:700;margin-bottom:8px;">Mening apellyatsiyalarim (${app.appeals.length})</div>
+                  <div style="font-weight:700;margin-bottom:8px;">${esc(t('myAppeals'))} (${app.appeals.length})</div>
                   ${app.appeals.length ? app.appeals.map(a => `
                     <div class="row-item"><div><b>${esc(a.subject)}</b><div style="font-size:12px;color:var(--text-secondary);">${esc(a.reason)}</div></div><span class="pill pill-brand">${esc(a.status)}</span></div>
                   `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`}
                 </div>
                 <div>
-                  <div style="font-weight:700;margin-bottom:8px;">Apellyatsiya topshirish mumkin (${app.eligible.length})</div>
+                  <div style="font-weight:700;margin-bottom:8px;">${esc(t('eligibleAppeals'))} (${app.eligible.length})</div>
                   ${app.eligible.length ? app.eligible.map(e => `
                     <div class="row-item"><div><b>${esc(e.subject)}</b><div style="font-size:12px;color:var(--text-secondary);">${esc(e.exam_type)}</div></div><span class="pill pill-neutral">${esc(e.grade)}</span></div>
                   `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`}
@@ -1984,20 +2314,28 @@
           <div class="card">
             <div class="card-title"><span>${esc(t('library'))} (Unilibrary.uz)</span></div>
             <div style="display:flex;gap:8px;">
-              <input class="input" id="libInput" value="${esc(state.ui.libQuery)}" placeholder="Kitob, muallif yoki fan nomi..." onkeydown="if(event.key==='Enter')loadLibrary(this.value)" />
-              <button class="btn btn-primary" onclick="loadLibrary(document.getElementById('libInput').value)">${ICONS.search}</button>
+              <input class="input" id="libInput" value="${esc(state.ui.libQuery)}" placeholder="${esc(t('libSearchPh'))}" />
+              <button type="button" class="btn btn-primary" data-act="search-lib">${ICONS.search}</button>
             </div>
           </div>
           <div class="card">
-            ${items.length ? items.map(b => `
-              <div class="row-item">
-                <div>
-                  <div style="font-weight:700;">${esc(b.name || b.title || 'Adabiyot')}</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">${esc(b.authors || b.author || '')} ${b.publisher_year ? '• ' + esc(b.publisher_year) : ''}</div>
+            ${items.length ? items.map(b => {
+              const bookUrl = b.link || b.url || (b.id ? `https://unilibrary.uz/literature/${encodeURIComponent(b.id)}` : `https://unilibrary.uz/literature?name=${encodeURIComponent(b.name || b.title || '')}`);
+              return `
+                <div class="row-item">
+                  <div>
+                    <div style="font-weight:700;">${esc(b.name || b.title || 'Adabiyot')}</div>
+                    <div style="font-size:12px;color:var(--text-secondary);">${esc(b.authors || b.author || '')} ${b.publisher_year ? '• ' + esc(b.publisher_year) : ''}</div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-ghost" data-external="${esc(bookUrl)}">${esc(t('openBtn'))}</button>
                 </div>
-                <button class="btn btn-sm btn-ghost" data-url="${esc(b.link || b.url || ('https://unilibrary.uz/literature?name=' + encodeURIComponent(b.name || b.title || '')))}" onclick="openExternal(this.dataset.url)">Ochish</button>
+              `;
+            }).join('') : `
+              <div class="empty-box">
+                <div style="margin-bottom:10px;">${esc(t('libEmpty'))}</div>
+                <button type="button" class="btn btn-sm btn-ghost" data-external="https://unilibrary.uz">${esc(t('libOpenPortal'))}</button>
               </div>
-            `).join('') : `<div class="empty-box">Qidiruv so'zini kiriting yoki <a href="javascript:void(0)" onclick="openExternal('https://unilibrary.uz')">unilibrary.uz</a> ni oching</div>`}
+            `}
           </div>
         </div>
       `;
@@ -2010,21 +2348,21 @@
         { title: 'Ijtimoiy faollik', sub: 'Talaba faollik reytingi', url: 'https://my.hemis.uz/dashboard/social-activity' },
         { title: 'AI-HEMIS', sub: 'Sun\'iy intellekt yordamchisi', url: 'https://ai-hemis.e-edu.uz' },
         { title: 'So\'rovnomalar', sub: 'survey.hemis.uz', url: 'https://my.hemis.uz/dashboard/polls' },
-        { title: 'Diplom tekshirish', sub: 'Rasmiy diplom holati', url: 'https://my.hemis.uz/check-diplom' },
-        { title: 'Shartnoma olish', sub: 'my.hemis.uz/get-contract', url: 'https://my.hemis.uz/get-contract' },
-        { title: 'Umumiy statistika', sub: 'OTMlar statistikasi', url: 'https://my.hemis.uz/statistics' },
+        { title: t('subDiplomaCheck'), sub: 'my.hemis.uz/check-diplom', url: 'https://my.hemis.uz/check-diplom' },
+        { title: t('subGetContract'), sub: 'my.hemis.uz/get-contract', url: 'https://my.hemis.uz/get-contract' },
+        { title: t('subStats'), sub: 'my.hemis.uz/statistics', url: 'https://my.hemis.uz/statistics' },
       ];
       return `
         <div class="stack">
           <div class="card">
-            <div class="card-title">Barcha O'quv va Moliyaviy Bo'limlar</div>
+            <div class="card-title">${esc(t('allEduFin'))}</div>
             <div class="menu-grid">
-              <button class="menu-tile" onclick="navTo('subjects')"><div class="menu-icon" style="background:var(--brand-soft);color:var(--brand);">${ICONS.book}</div><div class="menu-tile-title">${esc(t('subjects'))}</div><div class="menu-tile-sub">Kunlik & semestr baholar, topshiriqlar</div></button>
-              <button class="menu-tile" onclick="navTo('eduplan')"><div class="menu-icon" style="background:var(--violet-soft);color:var(--violet);">${ICONS.layers}</div><div class="menu-tile-title">${esc(t('eduplan'))}</div><div class="menu-tile-sub">O'quv reja, GPA va qarzdorlik</div></button>
-              <button class="menu-tile" onclick="navTo('exams')"><div class="menu-icon" style="background:var(--warning-soft);color:var(--warning);">${ICONS.award}</div><div class="menu-tile-title">${esc(t('exams'))}</div><div class="menu-tile-sub">Imtihonlar jadvali</div></button>
-              <button class="menu-tile" onclick="navTo('payment')"><div class="menu-icon" style="background:var(--success-soft);color:var(--success);">${ICONS.wallet}</div><div class="menu-tile-title">${esc(t('payment'))}</div><div class="menu-tile-sub">Kontrakt, stipendiya, subsidiya</div></button>
-              <button class="menu-tile" onclick="navTo('services')"><div class="menu-icon" style="background:var(--teal-soft);color:var(--teal);">${ICONS.file}</div><div class="menu-tile-title">${esc(t('services'))}</div><div class="menu-tile-sub">Ketish varaqasi, apellyatsiya</div></button>
-              <button class="menu-tile" onclick="navTo('library')"><div class="menu-icon" style="background:var(--brand-soft);color:var(--brand);">${ICONS.search}</div><div class="menu-tile-title">${esc(t('library'))}</div><div class="menu-tile-sub">Unilibrary elektron kitoblar</div></button>
+              <button type="button" class="menu-tile" data-nav="subjects"><div class="menu-icon" style="background:var(--brand-soft);color:var(--brand);">${ICONS.book}</div><div class="menu-tile-title">${esc(t('subjects'))}</div><div class="menu-tile-sub">${esc(t('quickDescSubjects'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="eduplan"><div class="menu-icon" style="background:var(--violet-soft);color:var(--violet);">${ICONS.layers}</div><div class="menu-tile-title">${esc(t('eduplan'))}</div><div class="menu-tile-sub">${esc(t('quickDescEduplan'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="exams"><div class="menu-icon" style="background:var(--warning-soft);color:var(--warning);">${ICONS.award}</div><div class="menu-tile-title">${esc(t('exams'))}</div><div class="menu-tile-sub">${esc(t('quickDescExams'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="payment"><div class="menu-icon" style="background:var(--success-soft);color:var(--success);">${ICONS.wallet}</div><div class="menu-tile-title">${esc(t('payment'))}</div><div class="menu-tile-sub">${esc(t('quickDescPayment'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="services"><div class="menu-icon" style="background:var(--teal-soft);color:var(--teal);">${ICONS.file}</div><div class="menu-tile-title">${esc(t('services'))}</div><div class="menu-tile-sub">${esc(t('quickDescServices'))}</div></button>
+              <button type="button" class="menu-tile" data-nav="library"><div class="menu-icon" style="background:var(--brand-soft);color:var(--brand);">${ICONS.search}</div><div class="menu-tile-title">${esc(t('library'))}</div><div class="menu-tile-sub">${esc(t('quickDescLibrary'))}</div></button>
             </div>
           </div>
 
@@ -2033,7 +2371,7 @@
             <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">${esc(t('oneidHint'))}</p>
             <div class="menu-grid">
               ${oneIdLinks.map(l => `
-                <button class="menu-tile" onclick="openExternal('${l.url}')">
+                <button type="button" class="menu-tile" data-external="${esc(l.url)}">
                   <div class="menu-icon" style="background:var(--surface-sunken);color:var(--brand);">${ICONS.external}</div>
                   <div class="menu-tile-title">${esc(l.title)}</div>
                   <div class="menu-tile-sub">${esc(l.sub)}</div>
@@ -2064,7 +2402,7 @@
           <div class="card">
             <div class="card-title">
               <span>${esc(t('profile'))}</span>
-              <button class="btn btn-sm btn-ghost" onclick="navTo('settings')">${ICONS.settings} ${esc(t('settings'))}</button>
+              <button type="button" class="btn btn-sm btn-ghost" data-nav="settings">${ICONS.settings} ${esc(t('settings'))}</button>
             </div>
             ${rows.map(([k, v]) => `
               <div class="row-item">
@@ -2074,9 +2412,9 @@
             `).join('')}
           </div>
           <div class="card" style="display:flex;flex-wrap:wrap;gap:10px;">
-            <button class="btn btn-primary" onclick="requestPdfReport()">📄 ${esc(t('pdfReport'))}</button>
-            <button class="btn btn-ghost" onclick="state.ui.showLoginModal=true;render();">🔄 ${esc(t('switchAcc'))}</button>
-            <button class="btn btn-danger" onclick="handleLogout()">🚪 ${esc(t('logout'))}</button>
+            <button type="button" class="btn btn-primary" data-act="request-pdf">📄 ${esc(t('pdfReport'))}</button>
+            <button type="button" class="btn btn-ghost" data-act="open-login">🔄 ${esc(t('switchAcc'))}</button>
+            <button type="button" class="btn btn-danger" data-act="logout">🚪 ${esc(t('logout'))}</button>
           </div>
         </div>
       `;
@@ -2092,21 +2430,21 @@
             <div class="card-title">${esc(t('notifTitle'))}</div>
             <div class="row-item">
               <span>${esc(t('notifEnable'))}</span>
-              <button class="switch ${st.notifications_enabled ? 'on' : ''}" onclick="updateSetting({notifications_enabled: ${st.notifications_enabled ? 0 : 1}})"></button>
+              <button type="button" class="switch ${st.notifications_enabled ? 'on' : ''}" data-act="toggle-bool" data-key="notifications_enabled"></button>
             </div>
             <div class="row-item">
               <span>${esc(t('dailyRep'))}</span>
-              <button class="switch ${st.daily_enabled ? 'on' : ''}" onclick="updateSetting({daily_enabled: ${st.daily_enabled ? 0 : 1}})"></button>
+              <button type="button" class="switch ${st.daily_enabled ? 'on' : ''}" data-act="toggle-bool" data-key="daily_enabled"></button>
             </div>
             <div class="row-item">
               <span>${esc(t('weeklyRep'))}</span>
-              <button class="switch ${st.weekly_enabled ? 'on' : ''}" onclick="updateSetting({weekly_enabled: ${st.weekly_enabled ? 0 : 1}})"></button>
+              <button type="button" class="switch ${st.weekly_enabled ? 'on' : ''}" data-act="toggle-bool" data-key="weekly_enabled"></button>
             </div>
             <div class="row-item" style="flex-wrap:wrap;">
               <span>${esc(t('repTime'))}</span>
               <div style="display:flex;gap:6px;flex-wrap:wrap;">
                 ${(st.report_time_choices || []).map(tm => `
-                  <button class="btn btn-sm ${st.report_time === tm ? 'btn-primary' : 'btn-ghost'}" onclick="updateSetting({report_time:'${esc(tm)}'})">${esc(tm)}</button>
+                  <button type="button" class="btn btn-sm ${st.report_time === tm ? 'btn-primary' : 'btn-ghost'}" data-act="set-time" data-val="${esc(tm)}">${esc(tm)}</button>
                 `).join('')}
               </div>
             </div>
@@ -2114,10 +2452,16 @@
               <span>${esc(t('riskThr'))}</span>
               <div style="display:flex;gap:6px;flex-wrap:wrap;">
                 ${(st.threshold_choices || []).map(th => `
-                  <button class="btn btn-sm ${Number(st.alert_threshold) === Number(th) ? 'btn-primary' : 'btn-ghost'}" onclick="updateSetting({alert_threshold:${Number(th)}})">${esc(th)}%</button>
+                  <button type="button" class="btn btn-sm ${Number(st.alert_threshold) === Number(th) ? 'btn-primary' : 'btn-ghost'}" data-act="set-thr" data-val="${esc(Number(th))}">${esc(th)}%</button>
                 `).join('')}
               </div>
             </div>
+            ${(!state.liveApi && !API_BASE && state.ui.settingsDirty) ? `
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                <span style="font-size:12px;color:var(--text-secondary);">${esc(t('dirtySettingsHint'))}</span>
+                <button type="button" class="btn btn-primary" data-act="save-offline-settings">${esc(t('saveToBot'))}</button>
+              </div>
+            ` : ''}
           </div>
 
           ${subjects.length ? `
@@ -2126,8 +2470,8 @@
               ${subjects.map(s => `
                 <div class="row-item">
                   <span>${esc(s)}</span>
-                  <button class="btn btn-sm ${mutedSet.has(s) ? 'btn-danger' : 'btn-ghost'}" data-subj="${esc(s)}" onclick="toggleMuteSubject(this.dataset.subj)">
-                    ${mutedSet.has(s) ? '🔕 O\'chirilgan' : '🔔 Faol'}
+                  <button type="button" class="btn btn-sm ${mutedSet.has(s) ? 'btn-danger' : 'btn-ghost'}" data-act="toggle-mute" data-subj="${esc(s)}">
+                    ${esc(mutedSet.has(s) ? t('mutedOff') : t('mutedOn'))}
                   </button>
                 </div>
               `).join('')}
@@ -2165,6 +2509,118 @@
       root.innerHTML = (views[state.page] || renderDashboard)();
     }
 
+    document.addEventListener('click', (ev) => {
+      const target = ev.target instanceof Element ? ev.target : null;
+      if (!target) return;
+      const navEl = target.closest('[data-nav]');
+      if (navEl) {
+        navTo(navEl.dataset.nav);
+        return;
+      }
+      const extEl = target.closest('[data-external]');
+      if (extEl) {
+        openExternal(extEl.dataset.external);
+        return;
+      }
+      const dlEl = target.closest('[data-dl-file], [data-dl-link]');
+      if (dlEl) {
+        downloadHemisDoc(dlEl.dataset.dlFile || '', dlEl.dataset.dlLink || '');
+        return;
+      }
+      const actEl = target.closest('[data-act]');
+      if (!actEl) return;
+      const act = actEl.dataset.act;
+      if (act === 'refresh') forceRefresh();
+      else if (act === 'cycle-lang') cycleLanguage();
+      else if (act === 'toggle-theme') toggleTheme();
+      else if (act === 'toggle-pwd') {
+        const p = document.getElementById('pwdInput');
+        if (p) p.type = p.type === 'password' ? 'text' : 'password';
+      } else if (act === 'close-login') {
+        state.ui.showLoginModal = false;
+        render();
+      } else if (act === 'open-login') {
+        state.ui.showLoginModal = true;
+        render();
+      } else if (act === 'set-day') {
+        state.ui.day = Number(actEl.dataset.val) || 1;
+        render();
+      } else if (act === 'set-att-tab') {
+        state.ui.attTab = actEl.dataset.val || 'subject';
+        render();
+      } else if (act === 'set-subj-tab') {
+        const v = actEl.dataset.val || 'daily';
+        state.ui.subjTab = v;
+        render();
+        if (v === 'res' && API_BASE && state.authenticated && !state.ui.loadedSections.subject_detail) {
+          loadSection('subject_detail');
+        }
+      } else if (act === 'set-daily-mode') {
+        state.ui.dailyMode = actEl.dataset.val || 'recent';
+        render();
+      } else if (act === 'set-sem') {
+        state.ui.selectedSem = actEl.dataset.val || '';
+        render();
+      } else if (act === 'set-pay-tab') {
+        state.ui.payTab = actEl.dataset.val || 'contract';
+        render();
+      } else if (act === 'set-srv-tab') {
+        state.ui.srvTab = actEl.dataset.val || 'documents';
+        render();
+      } else if (act === 'scan-qr') {
+        triggerQrScan();
+      } else if (act === 'submit-qr') {
+        const inp = document.getElementById('qrManualInput');
+        handleQrSubmit(inp ? inp.value.trim() : '');
+      } else if (act === 'search-lib') {
+        const inp = document.getElementById('libInput');
+        loadLibrary(inp ? inp.value.trim() : '');
+      } else if (act === 'request-pdf') {
+        requestPdfReport();
+      } else if (act === 'logout') {
+        handleLogout();
+      } else if (act === 'toggle-bool') {
+        const k = actEl.dataset.key;
+        if (['notifications_enabled', 'daily_enabled', 'weekly_enabled'].includes(k)) {
+          updateSetting({ [k]: state.settings[k] ? 0 : 1 });
+        }
+      } else if (act === 'set-time') {
+        updateSetting({ report_time: actEl.dataset.val });
+      } else if (act === 'set-thr') {
+        updateSetting({ alert_threshold: Number(actEl.dataset.val) });
+      } else if (act === 'toggle-mute') {
+        toggleMuteSubject(actEl.dataset.subj || '');
+      } else if (act === 'save-offline-settings') {
+        flushOfflineSettings();
+      }
+    });
+
+    document.addEventListener('change', (ev) => {
+      const el = ev.target instanceof Element ? ev.target : null;
+      if (!el || !el.dataset.change) return;
+      if (el.dataset.change === 'week') {
+        state.ui.selectedWeekId = el.value;
+        render();
+      } else if (el.dataset.change === 'subj-filter') {
+        state.ui.subjFilter = el.value;
+        render();
+      }
+    });
+
+    document.addEventListener('submit', (ev) => {
+      if (ev.target && ev.target.id === 'loginForm') handleLoginSubmit(ev);
+    });
+
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' && ev.target && ev.target.id === 'libInput') {
+        loadLibrary(ev.target.value.trim());
+      }
+    });
+
+    document.addEventListener('error', (ev) => {
+      if (ev.target && ev.target.tagName === 'IMG') ev.target.style.display = 'none';
+    }, true);
+
     async function init() {
       try {
         const snap = await decodeUrlSnapshot();
@@ -2179,7 +2635,7 @@
           applyBootstrapPayload(data);
           render();
         } catch (e) {
-          state.apiError = e.message || 'API xatosi';
+          state.apiError = e.message || 'API error';
           render();
         }
       }
