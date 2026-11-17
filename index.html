@@ -73,6 +73,10 @@
       color: var(--text-muted);
       margin-top: 2px;
     }
+    .ui-lang-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
     .ui-lang-badge {
       padding: 6px 11px;
       border-radius: 10px;
@@ -80,6 +84,48 @@
       background: #FAF9F6;
       font-size: 12.5px;
       font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .ui-lang-badge:active {
+      background: #EEEAE0;
+    }
+    .ui-lang-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      padding: 4px;
+      min-width: 145px;
+      z-index: 50;
+      display: none;
+    }
+    .ui-lang-menu.open {
+      display: block;
+    }
+    .ui-lang-option {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ui-lang-option:hover, .ui-lang-option.active {
+      background: #F3EFE6;
+      font-weight: 700;
     }
 
     /* 5-MODE NAVIGATION TABS */
@@ -515,7 +561,14 @@
         <p id="modeSubText">Mavzuni yozing va shablonni tanlang.</p>
       </div>
     </div>
-    <div class="ui-lang-badge">O'zbekcha ▾</div>
+    <div class="ui-lang-wrap" id="uiLangWrap">
+      <button type="button" class="ui-lang-badge" id="uiLangBtn">O'zbekcha ▾</button>
+      <div class="ui-lang-menu" id="uiLangMenu">
+        <button type="button" class="ui-lang-option active" data-uilang="uz">🇺🇿 O'zbekcha</button>
+        <button type="button" class="ui-lang-option" data-uilang="ru">🇷🇺 Русский</button>
+        <button type="button" class="ui-lang-option" data-uilang="en">🇬🇧 English</button>
+      </div>
+    </div>
   </div>
 
   <!-- TOP 5-MODE NAVIGATION TABS -->
@@ -538,7 +591,7 @@
 
     <!-- ISH TURI (Faqat Referat rejimida) -->
     <div class="field-group hidden" id="docTypeGroup">
-      <label class="field-label">Ish turi</label>
+      <label class="field-label" id="docTypeLabel">Ish turi</label>
       <div class="doc-type-grid" id="docTypeGrid">
         <button type="button" class="doc-pill active" data-doctype="Mustaqil ish">Mustaqil ish</button>
         <button type="button" class="doc-pill" data-doctype="Referat">Referat</button>
@@ -550,7 +603,7 @@
 
     <!-- GRAFIK ORGANAYZER TURI (Faqat Infografika rejimida) -->
     <div class="field-group hidden" id="graphicTypeGroup">
-      <label class="field-label">Pedagogik grafik / Infografika turi</label>
+      <label class="field-label" id="graphicTypeLabel">Pedagogik grafik / Infografika turi</label>
       <div class="graphic-type-grid" id="graphicTypeGrid">
         <button type="button" class="graphic-pill active" data-gtype="klaster">🕸 Klaster</button>
         <button type="button" class="graphic-pill" data-gtype="baliq">🐟 Baliq skeleti</button>
@@ -561,7 +614,7 @@
 
     <!-- FAN NOMI -->
     <div class="field-group hidden" id="subjectGroup">
-      <label class="field-label">Fan nomi</label>
+      <label class="field-label" id="subjectLabel">Fan nomi</label>
       <input type="text" id="subjectInput" class="text-input" placeholder="Masalan: Organik kimyo / Farmakologiya" />
     </div>
 
@@ -573,44 +626,44 @@
 
     <!-- MUALLIF -->
     <div class="field-group">
-      <label class="field-label">Muallif (Talaba)</label>
+      <label class="field-label" id="authorLabel">Muallif (Talaba)</label>
       <input type="text" id="authorInput" class="text-input" placeholder="Ism Familiya" value="" />
     </div>
 
     <!-- GURUH VA O'QITUVCHI -->
     <div class="field-group row-2col hidden" id="teacherGroup">
       <div>
-        <label class="field-label">Guruh / Kurs</label>
+        <label class="field-label" id="groupLabel">Guruh / Kurs</label>
         <input type="text" id="groupInput" class="text-input" placeholder="Masalan: 401-guruh" value="4-kurs" />
       </div>
       <div>
-        <label class="field-label">Qabul qildi (O'qituvchi)</label>
+        <label class="field-label" id="teacherLabel">Qabul qildi (O'qituvchi)</label>
         <input type="text" id="teacherInput" class="text-input" placeholder="F.I.Sh (ixtiyoriy)" />
       </div>
     </div>
 
     <!-- TASHKILOT -->
     <div class="field-group">
-      <label class="field-label">Tashkilot / OTM</label>
+      <label class="field-label" id="orgLabel">Tashkilot / OTM</label>
       <input type="text" id="orgInput" class="text-input" placeholder="Masalan, Farmatsevtika instituti" value="Farmatsevtika instituti" />
     </div>
 
     <!-- SHAHAR & YIL -->
     <div class="field-group row-2col">
       <div>
-        <label class="field-label">Shahar</label>
+        <label class="field-label" id="cityLabel">Shahar</label>
         <input type="text" id="cityInput" class="text-input" value="Toshkent" />
       </div>
       <div>
-        <label class="field-label">Yil</label>
+        <label class="field-label" id="yearLabel">Yil</label>
         <input type="text" id="yearInput" class="text-input" value="2026" />
       </div>
     </div>
 
     <!-- TIL -->
     <div class="field-group">
-      <label class="field-label">Yozilish tili</label>
-      <p class="field-sub">Butun taqdimot va hujjatlar shu tilda yoziladi. «O‘zbekcha» — yangi alifbo, «O'zbekcha» — standart lotin, «Ўзбекча» — kirill yozuvi.</p>
+      <label class="field-label" id="docLangLabel">Yozilish tili</label>
+      <p class="field-sub" id="docLangSub">Butun taqdimot va hujjatlar shu tilda yoziladi. «O‘zbekcha» — yangi alifbo, «O'zbekcha» — standart lotin, «Ўзбекча» — kirill yozuvi.</p>
       <div class="lang-grid" id="langGrid">
         <button type="button" class="lang-pill active" data-lang="uz_lat">O‘zbekcha</button>
         <button type="button" class="lang-pill" data-lang="uz_old">O'zbekcha</button>
@@ -640,16 +693,16 @@
     <div class="field-group" id="densityGroup">
       <label class="field-label" id="densityLabel">Matn hajmi</label>
       <div class="segmented-control" id="densityControl">
-        <button type="button" class="seg-btn" data-density="londa">Lo'nda</button>
-        <button type="button" class="seg-btn active" data-density="muvozanatli">Muvozanatli</button>
-        <button type="button" class="seg-btn" data-density="batafsil">Batafsil</button>
+        <button type="button" class="seg-btn" data-density="londa" id="densLonda">Lo'nda</button>
+        <button type="button" class="seg-btn active" data-density="muvozanatli" id="densMuv">Muvozanatli</button>
+        <button type="button" class="seg-btn" data-density="batafsil" id="densBat">Batafsil</button>
       </div>
       <p class="helper-caption" id="densityCaption">Matn va bo'sh joy teng — ko'p hollarda eng qulayi.</p>
     </div>
 
     <!-- QO'SHIMCHA TALABLAR -->
     <div class="field-group">
-      <label class="field-label">Qo'shimcha talablar (ixtiyoriy)</label>
+      <label class="field-label" id="extraLabel">Qo'shimcha talablar (ixtiyoriy)</label>
       <textarea id="extraInput" class="text-area" placeholder="Masalan: Rasmlar mavzuga mos bo'lsin, bitta listida krossvord yoki kimyoviy formulalar va jadval bo'lsin"></textarea>
     </div>
 
@@ -668,17 +721,17 @@
 
   <!-- FIXED SUBMIT BUTTON -->
   <div class="bottom-bar">
-    <button type="button" class="submit-btn" id="openConfirmBtn">Slayd tayyorlash · tekin</button>
+    <button type="button" class="submit-btn" id="openConfirmBtn">Slayd tayyorlash</button>
   </div>
 
   <!-- CONFIRMATION MODAL -->
   <div class="modal-backdrop" id="confirmModal">
     <div class="modal-card">
       <div class="modal-title" id="modalTopicTitle">Mavzu: «Parafinlar sintezi»</div>
-      <div class="modal-desc">
+      <div class="modal-desc" id="modalDesc">
         Mavzu to'g'ri yozilganmi? Xato bo'lsa, AI boshqa narsa haqida yozib qo'yishi mumkin.
       </div>
-      <div class="modal-meta" id="modalSlideMeta">10 ta slayd · tekin</div>
+      <div class="modal-meta" id="modalSlideMeta">10 ta slayd</div>
       <div class="modal-actions">
         <button type="button" class="modal-btn" id="cancelModalBtn">Bekor qilish</button>
         <button type="button" class="modal-btn" id="confirmSendBtn">OK</button>
@@ -688,25 +741,453 @@
 
   <script>
     const tg = window.Telegram?.WebApp;
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialMode = urlParams.get("mode") || "taqdimot";
+    const initialLang = urlParams.get("lang") || "uz_lat";
+    const apiEndpoint = urlParams.get("api_url") || "";
+
+    function normalizeUiLang(raw) {
+      if (!raw) return null;
+      const v = String(raw).trim().toLowerCase();
+      if (v === "ru" || v.startsWith("ru")) return "ru";
+      if (v === "en" || v.startsWith("en")) return "en";
+      if (v === "uz" || v.startsWith("uz")) return "uz";
+      return null;
+    }
+
     let tgUserId = null;
+    let resolvedUserName = "";
     if (tg) {
       tg.expand();
       tg.ready();
       const user = tg.initDataUnsafe?.user;
       if (user) {
         tgUserId = user.id;
-        if (user.first_name) {
-          document.getElementById('userGreeting').textContent = `Salom, ${user.first_name}`;
-          document.getElementById('userAvatar').textContent = user.first_name.charAt(0).toUpperCase();
-          document.getElementById('authorInput').value = [user.first_name, user.last_name || ''].join(' ').trim();
-        }
+        resolvedUserName = [user.first_name || "", user.last_name || ""].join(" ").trim();
       }
     }
 
-    const DENSITY_CAPTIONS = {
-      londa: "Qisqa tezislar va asosiy faktlar — tez ko'rib chiqish uchun.",
-      muvozanatli: "Matn va bo'sh joy teng — ko'p hollarda eng qulayi.",
-      batafsil: "To'liq gaplar, izoh va misollar — o'qib tushunsa bo'ladigan slaydlar."
+    const urlName = (urlParams.get("name") || "").trim();
+    const urlUid = (urlParams.get("uid") || "").trim();
+    if (!resolvedUserName && urlName) {
+      resolvedUserName = urlName;
+    }
+    if (!tgUserId && urlUid) {
+      tgUserId = /^\d+$/.test(urlUid) ? Number(urlUid) : urlUid;
+    }
+    try {
+      if (resolvedUserName) localStorage.setItem("slaydchi_tg_name", resolvedUserName);
+      else resolvedUserName = (localStorage.getItem("slaydchi_tg_name") || "").trim();
+
+      if (tgUserId) localStorage.setItem("slaydchi_tg_uid", String(tgUserId));
+      else {
+        const storedUid = (localStorage.getItem("slaydchi_tg_uid") || "").trim();
+        if (storedUid) tgUserId = /^\d+$/.test(storedUid) ? Number(storedUid) : storedUid;
+      }
+    } catch (e) {}
+
+    let savedUiLang = null;
+    try { savedUiLang = normalizeUiLang(localStorage.getItem("slaydchi_ui_lang")); } catch (e) {}
+    let currentUiLang =
+      normalizeUiLang(urlParams.get("ui_lang")) ||
+      normalizeUiLang(urlParams.get("lang")) ||
+      savedUiLang ||
+      normalizeUiLang(tg?.initDataUnsafe?.user?.language_code) ||
+      "uz";
+
+    let userPickedDocLang = Boolean(urlParams.get("lang"));
+
+    if (resolvedUserName) {
+      const firstToken = resolvedUserName.split(/\s+/)[0] || resolvedUserName;
+      document.getElementById('userAvatar').textContent = firstToken.charAt(0).toUpperCase();
+      document.getElementById('authorInput').value = resolvedUserName;
+    }
+
+    const UI_I18N = {
+      uz: {
+        badge: "O'zbekcha ▾",
+        greet: (name) => `Salom, ${name || "Foydalanuvchi"}`,
+        sub: "Mavzuni yozing va shablonni tanlang.",
+        modes: {
+          taqdimot: "📊 Taqdimot",
+          referat: "📝 Referat / Mustaqil",
+          test: "🧪 Testlar",
+          krossvord: "🧩 Krossvord",
+          infografika: "🧠 Grafiklar"
+        },
+        docTypes: {
+          "Mustaqil ish": "Mustaqil ish",
+          "Referat": "Referat",
+          "Kurs ishi": "Kurs ishi",
+          "Ilmiy maqola": "Ilmiy maqola",
+          "Tezis": "Tezis"
+        },
+        gTypes: {
+          klaster: "🕸 Klaster",
+          baliq: "🐟 Baliq skeleti",
+          venn: "⭕ Venn diagrammasi",
+          swot: "📊 SWOT tahlil"
+        },
+        labels: {
+          docType: "Ish turi",
+          graphicType: "Pedagogik grafik / Infografika turi",
+          subject: "Fan nomi",
+          topic: "Mavzu",
+          author: "Muallif (Talaba)",
+          group: "Guruh / Kurs",
+          teacher: "Qabul qildi (O'qituvchi)",
+          org: "Tashkilot / OTM",
+          city: "Shahar",
+          year: "Yil",
+          docLang: "Yozilish tili",
+          docLangSub: "Butun taqdimot va hujjatlar shu tilda yoziladi. «O‘zbekcha» — yangi alifbo, «O'zbekcha» — standart lotin, «Ўзбекча» — kirill yozuvi.",
+          density: "Matn hajmi",
+          densLonda: "Lo'nda",
+          densMuv: "Muvozanatli",
+          densBat: "Batafsil",
+          extra: "Qo'shimcha talablar (ixtiyoriy)"
+        },
+        placeholders: {
+          subject: "Masalan: Organik kimyo / Farmakologiya",
+          topic: "Masalan: Parafinlar sintezi va xossalari",
+          author: "Ism Familiya",
+          group: "Masalan: 401-guruh",
+          teacher: "F.I.Sh (ixtiyoriy)",
+          org: "Masalan, Farmatsevtika instituti"
+        },
+        densityCaptions: {
+          londa: "Qisqa tezislar va asosiy faktlar — tez ko'rib chiqish uchun.",
+          muvozanatli: "Matn va bo'sh joy teng — ko'p hollarda eng qulayi.",
+          batafsil: "To'liq gaplar, izoh va misollar — o'qib tushunsa bo'ladigan slaydlar."
+        },
+        categories: {
+          taqdimot: { all: "Barchasi", akademik: "Akademik", tibbiyot: "Tibbiyot & Kimyo", biznes: "Biznes", kreativ: "Kreativ", minimalist: "Minimalist" },
+          referat: { all: "Barchasi", akademik: "OTM Standart", jurnal: "Ilmiy Jurnal", minimal: "Minimalist" },
+          test: { all: "Barchasi", akademik: "Akademik", tibbiyot: "Tibbiyot", tech: "IT & Kreativ" },
+          krossvord: { all: "Barchasi", klassik: "Klassik (PDF+Word)", pptx: "O'yin & Doodle (.pptx)" },
+          infografika: { all: "Barchasi", pptx: "PowerPoint (.pptx)", pdf: "A4 Plakat (PDF)" }
+        },
+        countSuffix: (n) => `${n} ta`,
+        liveDefaults: { topic: "Parafinlar sintezi va xossalari", author: "Muallif", org: "OTM", student: "Talaba", city: "Toshkent" },
+        modeUI: {
+          taqdimot: {
+            tplTitle: "Taqdimot shablonlari",
+            promo: (n) => `Taqdimot: ${n} ta shablon (Slidesgo & PGo .pptx), rasmlar · PDF + PPTX`,
+            counterLabel: "Slaydlar soni",
+            counterHelper: "Titul, Kirish, Reja, Manbalar va yakun slaydi doim bo'ladi.",
+            submit: "Slayd tayyorlash (PDF + PPTX)",
+            extraPh: "Masalan: Rasmlar mavzuga mos bo'lsin, bitta listida krossvord yoki jadval bo'lsin"
+          },
+          referat: {
+            tplTitle: (dt) => `${dt} dizaynlari`,
+            promo: (dt, n) => `${dt} — ${n} xil akademik dizayn (Word + PDF)`,
+            counterLabel: "Sahifalar (betlar) soni",
+            counterHelper: "Titul beti, Mundarija (Reja), Kirish, Asosiy boblar, Xulosa va Manbalar kiritiladi.",
+            submit: (dt) => `${dt} tayyorlash (Word + PDF)`,
+            extraPh: "Masalan: Jadval, formulalar va O'zbekiston amaliyoti bo'lsin"
+          },
+          test: {
+            tplTitle: "Test varag'i shablonlari",
+            promo: (n) => `Testlar to'plami — ${n} xil uslub, 4 variant (A, B, C, D) va kalit (Word + PDF)`,
+            counterLabel: "Test savollari soni",
+            counterHelper: "Har bir savol 4 ta variant va oxirgi betda to'g'ri javoblar kaliti bilan tuziladi.",
+            submit: "Testlar to'plamini tayyorlash (Word + PDF)",
+            extraPh: "Masalan: Klinik vaziyatli masalalar va formulali savollar ham qo'shilsin"
+          },
+          krossvord: {
+            tplTitle: "Krossvord shablonlari",
+            promo: (n) => `Krossvord — ${n} ta dizayn: bo'sh to'r + javoblar kaliti (PDF + Word + PPTX)`,
+            counterLabel: "Krossvord so'zlari soni",
+            counterHelper: "1-betda yechish uchun bo'sh katakchali krossvord, 2-betda to'ldirilgan javoblar chiqadi.",
+            submit: "Krossvord tayyorlash (PDF + Word)",
+            extraPh: "Masalan: Faqat asosiy atamalar va preparat/reaksiya nomlari bo'lsin"
+          },
+          infografika: {
+            gNames: {
+              klaster: "Klaster shablonlari",
+              baliq: "Baliq skeleti / Oqim shablonlari",
+              venn: "Venn diagrammasi shablonlari",
+              swot: "SWOT tahlil shablonlari"
+            },
+            promo: (gn, n) => `${gn}: ${n} ta shablon · A4 PDF + tahrirlanadigan .PPTX`,
+            submit: "Grafik organayzer tayyorlash",
+            extraPh: "Masalan: Markaziy tushuncha va tarmoqlar aniq misollar bilan yozilsin"
+          }
+        },
+        counterUnit: {
+          taqdimot: (c) => `${c} ta slayd`,
+          referat: (c) => `${c} bet (sahifa)`,
+          test: (c) => `${c} ta test savoli`,
+          krossvord: (c) => `${c} ta kalit so'z`,
+          infografika: () => `1 betlik A4 infografika`
+        },
+        modal: {
+          alertTopic: "Iltimos, avval mavzuni kiriting!",
+          topicPrefix: (t) => `Mavzu: «${t}»`,
+          desc: "Mavzu to'g'ri yozilganmi? Xato bo'lsa, AI boshqa narsa haqida yozib qo'yishi mumkin.",
+          metaSuffix: " · tayyorlash",
+          cancel: "Bekor qilish",
+          ok: "OK",
+          sendErr: "Yuborishda xatolik: ",
+          readyAlert: "Ma'lumot tayyor: "
+        }
+      },
+      ru: {
+        badge: "Русский ▾",
+        greet: (name) => `Привет, ${name || "Пользователь"}`,
+        sub: "Введите тему и выберите шаблон.",
+        modes: {
+          taqdimot: "📊 Презентация",
+          referat: "📝 Реферат / СРС",
+          test: "🧪 Тесты",
+          krossvord: "🧩 Кроссворд",
+          infografika: "🧠 Графика"
+        },
+        docTypes: {
+          "Mustaqil ish": "Самостоятельная работа",
+          "Referat": "Реферат",
+          "Kurs ishi": "Курсовая работа",
+          "Ilmiy maqola": "Научная статья",
+          "Tezis": "Тезисы"
+        },
+        gTypes: {
+          klaster: "🕸 Кластер",
+          baliq: "🐟 Рыбий скелет",
+          venn: "⭕ Диаграмма Венна",
+          swot: "📊 SWOT-анализ"
+        },
+        labels: {
+          docType: "Тип работы",
+          graphicType: "Тип графического органайзера / инфографики",
+          subject: "Название предмета",
+          topic: "Тема",
+          author: "Автор (Студент)",
+          group: "Группа / Курс",
+          teacher: "Проверил (Преподаватель)",
+          org: "Организация / ВУЗ",
+          city: "Город",
+          year: "Год",
+          docLang: "Язык документа",
+          docLangSub: "Вся презентация и документы будут написаны на выбранном языке.",
+          density: "Объём текста",
+          densLonda: "Кратко",
+          densMuv: "Сбалансировано",
+          densBat: "Подробно",
+          extra: "Дополнительные требования (необязательно)"
+        },
+        placeholders: {
+          subject: "Например: Органическая химия / Фармакология",
+          topic: "Например: Синтез и свойства парафинов",
+          author: "Имя Фамилия",
+          group: "Например: 401 группа",
+          teacher: "Ф.И.О. (необязательно)",
+          org: "Например, Фармацевтический институт"
+        },
+        densityCaptions: {
+          londa: "Краткие тезисы и ключевые факты — для быстрого обзора.",
+          muvozanatli: "Баланс текста и свободного места — оптимальный вариант.",
+          batafsil: "Полные предложения, пояснения и примеры — подробно раскрытые слайды."
+        },
+        categories: {
+          taqdimot: { all: "Все", akademik: "Академический", tibbiyot: "Медицина и Химия", biznes: "Бизнес", kreativ: "Креатив", minimalist: "Минимализм" },
+          referat: { all: "Все", akademik: "Стандарт ВУЗа", jurnal: "Научный журнал", minimal: "Минимализм" },
+          test: { all: "Все", akademik: "Академический", tibbiyot: "Медицина", tech: "IT и Креатив" },
+          krossvord: { all: "Все", klassik: "Классика (PDF+Word)", pptx: "Игра & Doodle (.pptx)" },
+          infografika: { all: "Все", pptx: "PowerPoint (.pptx)", pdf: "Плакат A4 (PDF)" }
+        },
+        countSuffix: (n) => `${n} шт.`,
+        liveDefaults: { topic: "Синтез и свойства парафинов", author: "Автор", org: "ВУЗ", student: "Студент", city: "Ташкент" },
+        modeUI: {
+          taqdimot: {
+            tplTitle: "Шаблоны презентаций",
+            promo: (n) => `Презентация: ${n} шаблонов (Slidesgo & PGo .pptx), иллюстрации · PDF + PPTX`,
+            counterLabel: "Количество слайдов",
+            counterHelper: "Титульный лист, Введение, План, Источники и заключительный слайд включаются всегда.",
+            submit: "Создать презентацию (PDF + PPTX)",
+            extraPh: "Например: Подберите иллюстрации по теме, добавьте таблицу или схему"
+          },
+          referat: {
+            tplTitle: (dt) => `Дизайны: ${dt}`,
+            promo: (dt, n) => `${dt} — ${n} академических дизайнов (Word + PDF)`,
+            counterLabel: "Количество страниц",
+            counterHelper: "Включаются Титульный лист, План, Введение, Основные главы, Заключение и Литература.",
+            submit: (dt) => `Создать (${dt}) · Word + PDF`,
+            extraPh: "Например: Добавьте таблицы, формулы и практические примеры"
+          },
+          test: {
+            tplTitle: "Шаблоны тестов",
+            promo: (n) => `Тесты — ${n} стилей оформления, 4 варианта (A, B, C, D) и ключ (Word + PDF)`,
+            counterLabel: "Количество вопросов",
+            counterHelper: "Каждый вопрос с 4 вариантами ответа и ключом правильных ответов на последней странице.",
+            submit: "Создать тесты (Word + PDF)",
+            extraPh: "Например: Добавьте ситуационные задачи и вопросы с формулами"
+          },
+          krossvord: {
+            tplTitle: "Шаблоны кроссвордов",
+            promo: (n) => `Кроссворд — ${n} дизайнов: пустая сетка + ключ ответов (PDF + Word + PPTX)`,
+            counterLabel: "Количество слов",
+            counterHelper: "На 1-й странице — сетка для решения, на 2-й странице — заполненные ответы.",
+            submit: "Создать кроссворд (PDF + Word)",
+            extraPh: "Например: Используйте только ключевые термины и названия реакций"
+          },
+          infografika: {
+            gNames: {
+              klaster: "Шаблоны кластера",
+              baliq: "Рыбий скелет / Схемы потока",
+              venn: "Шаблоны диаграммы Венна",
+              swot: "Шаблоны SWOT-анализа"
+            },
+            promo: (gn, n) => `${gn}: ${n} шаблонов · A4 PDF + редактируемый .PPTX`,
+            submit: "Создать графический органайзер",
+            extraPh: "Например: Укажите центральное понятие и ветви с конкретными примерами"
+          }
+        },
+        counterUnit: {
+          taqdimot: (c) => `${c} слайдов`,
+          referat: (c) => `${c} стр.`,
+          test: (c) => `${c} вопросов`,
+          krossvord: (c) => `${c} слов`,
+          infografika: () => `1 лист A4 инфографики`
+        },
+        modal: {
+          alertTopic: "Пожалуйста, сначала введите тему!",
+          topicPrefix: (t) => `Тема: «${t}»`,
+          desc: "Тема указана правильно? При опечатке ИИ может сгенерировать другой материал.",
+          metaSuffix: " · создать",
+          cancel: "Отмена",
+          ok: "OK",
+          sendErr: "Ошибка отправки: ",
+          readyAlert: "Данные готовы: "
+        }
+      },
+      en: {
+        badge: "English ▾",
+        greet: (name) => `Hello, ${name || "User"}`,
+        sub: "Enter a topic and choose a template.",
+        modes: {
+          taqdimot: "📊 Presentation",
+          referat: "📝 Essay / Paper",
+          test: "🧪 Tests",
+          krossvord: "🧩 Crossword",
+          infografika: "🧠 Charts"
+        },
+        docTypes: {
+          "Mustaqil ish": "Independent Work",
+          "Referat": "Essay / Report",
+          "Kurs ishi": "Term Paper",
+          "Ilmiy maqola": "Research Article",
+          "Tezis": "Thesis Abstract"
+        },
+        gTypes: {
+          klaster: "🕸 Cluster Map",
+          baliq: "🐟 Fishbone Diagram",
+          venn: "⭕ Venn Diagram",
+          swot: "📊 SWOT Analysis"
+        },
+        labels: {
+          docType: "Document type",
+          graphicType: "Graphic organizer / Infographic type",
+          subject: "Subject",
+          topic: "Topic",
+          author: "Author (Student)",
+          group: "Group / Year",
+          teacher: "Reviewed by (Instructor)",
+          org: "Organization / University",
+          city: "City",
+          year: "Year",
+          docLang: "Document language",
+          docLangSub: "All slides and generated documents will be written in this language.",
+          density: "Text density",
+          densLonda: "Concise",
+          densMuv: "Balanced",
+          densBat: "Detailed",
+          extra: "Additional requirements (optional)"
+        },
+        placeholders: {
+          subject: "e.g., Organic Chemistry / Pharmacology",
+          topic: "e.g., Synthesis and Properties of Paraffins",
+          author: "Full Name",
+          group: "e.g., Group 401",
+          teacher: "Instructor name (optional)",
+          org: "e.g., Pharmaceutical Institute"
+        },
+        densityCaptions: {
+          londa: "Short bullet points and key facts — great for quick review.",
+          muvozanatli: "Balanced text and whitespace — best in most cases.",
+          batafsil: "Full sentences, explanations, and examples — self-explanatory slides."
+        },
+        categories: {
+          taqdimot: { all: "All", akademik: "Academic", tibbiyot: "Medical & Chem", biznes: "Business", kreativ: "Creative", minimalist: "Minimalist" },
+          referat: { all: "All", akademik: "University Std", jurnal: "Journal Style", minimal: "Minimalist" },
+          test: { all: "All", akademik: "Academic", tibbiyot: "Medical", tech: "IT & Creative" },
+          krossvord: { all: "All", klassik: "Classic (PDF+Word)", pptx: "Game & Doodle (.pptx)" },
+          infografika: { all: "All", pptx: "PowerPoint (.pptx)", pdf: "A4 Poster (PDF)" }
+        },
+        countSuffix: (n) => `${n}`,
+        liveDefaults: { topic: "Synthesis and Properties of Paraffins", author: "Author", org: "University", student: "Student", city: "Tashkent" },
+        modeUI: {
+          taqdimot: {
+            tplTitle: "Presentation templates",
+            promo: (n) => `Presentation: ${n} templates (Slidesgo & PGo .pptx), visuals · PDF + PPTX`,
+            counterLabel: "Number of slides",
+            counterHelper: "Title, Introduction, Outline, References, and Thank-You slides are always included.",
+            submit: "Create Presentation (PDF + PPTX)",
+            extraPh: "e.g., Include relevant visuals, a comparison table, or summary chart"
+          },
+          referat: {
+            tplTitle: (dt) => `${dt} designs`,
+            promo: (dt, n) => `${dt} — ${n} academic layouts (Word + PDF)`,
+            counterLabel: "Number of pages",
+            counterHelper: "Includes Title Page, Outline, Introduction, Main Chapters, Conclusion, and References.",
+            submit: (dt) => `Create ${dt} (Word + PDF)`,
+            extraPh: "e.g., Include data tables, formulas, and case examples"
+          },
+          test: {
+            tplTitle: "Test sheet templates",
+            promo: (n) => `Test Bank — ${n} styles, 4 options (A, B, C, D) and answer key (Word + PDF)`,
+            counterLabel: "Number of questions",
+            counterHelper: "Each question has 4 choices with an answer key on the final page.",
+            submit: "Create Test Bank (Word + PDF)",
+            extraPh: "e.g., Include clinical case questions and formula problems"
+          },
+          krossvord: {
+            tplTitle: "Crossword templates",
+            promo: (n) => `Crossword — ${n} designs: blank grid + answer key (PDF + Word + PPTX)`,
+            counterLabel: "Number of words",
+            counterHelper: "Page 1 has the blank puzzle grid; Page 2 contains the filled answer key.",
+            submit: "Create Crossword (PDF + Word)",
+            extraPh: "e.g., Use only core terms and reaction names"
+          },
+          infografika: {
+            gNames: {
+              klaster: "Cluster map templates",
+              baliq: "Fishbone / Flow templates",
+              venn: "Venn diagram templates",
+              swot: "SWOT analysis templates"
+            },
+            promo: (gn, n) => `${gn}: ${n} templates · A4 PDF + editable .PPTX`,
+            submit: "Create Graphic Organizer",
+            extraPh: "e.g., Include central concept and clear branch examples"
+          }
+        },
+        counterUnit: {
+          taqdimot: (c) => `${c} slides`,
+          referat: (c) => `${c} pages`,
+          test: (c) => `${c} questions`,
+          krossvord: (c) => `${c} words`,
+          infografika: () => `1-page A4 infographic`
+        },
+        modal: {
+          alertTopic: "Please enter a topic first!",
+          topicPrefix: (t) => `Topic: «${t}»`,
+          desc: "Is the topic spelled correctly? A typo may cause AI to write about something else.",
+          metaSuffix: " · generate",
+          cancel: "Cancel",
+          ok: "OK",
+          sendErr: "Send error: ",
+          readyAlert: "Payload ready: "
+        }
+      }
     };
 
     const TEMPLATES = [
@@ -1372,43 +1853,78 @@
       }
     ];
 
+    function applyUiLanguage(uiLang) {
+      currentUiLang = normalizeUiLang(uiLang) || "uz";
+      const dict = UI_I18N[currentUiLang] || UI_I18N.uz;
+      document.documentElement.lang = currentUiLang;
+
+      document.getElementById('uiLangBtn').textContent = dict.badge;
+      document.querySelectorAll('.ui-lang-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.uilang === currentUiLang);
+      });
+
+      document.getElementById('userGreeting').textContent = dict.greet(resolvedUserName);
+      if (!resolvedUserName) {
+        document.getElementById('userAvatar').textContent = (dict.liveDefaults.student || "S").charAt(0).toUpperCase();
+      }
+      document.getElementById('modeSubText').textContent = dict.sub;
+
+      document.querySelectorAll('#modeNav .mode-tab').forEach(btn => {
+        const m = btn.dataset.mode;
+        if (dict.modes[m]) btn.textContent = dict.modes[m];
+      });
+      document.querySelectorAll('#docTypeGrid .doc-pill').forEach(btn => {
+        const dt = btn.dataset.doctype;
+        if (dict.docTypes[dt]) btn.textContent = dict.docTypes[dt];
+      });
+      document.querySelectorAll('#graphicTypeGrid .graphic-pill').forEach(btn => {
+        const gt = btn.dataset.gtype;
+        if (dict.gTypes[gt]) btn.textContent = dict.gTypes[gt];
+      });
+
+      document.getElementById('docTypeLabel').textContent = dict.labels.docType;
+      document.getElementById('graphicTypeLabel').textContent = dict.labels.graphicType;
+      document.getElementById('subjectLabel').textContent = dict.labels.subject;
+      document.getElementById('topicLabel').textContent = dict.labels.topic;
+      document.getElementById('authorLabel').textContent = dict.labels.author;
+      document.getElementById('groupLabel').textContent = dict.labels.group;
+      document.getElementById('teacherLabel').textContent = dict.labels.teacher;
+      document.getElementById('orgLabel').textContent = dict.labels.org;
+      document.getElementById('cityLabel').textContent = dict.labels.city;
+      document.getElementById('yearLabel').textContent = dict.labels.year;
+      document.getElementById('docLangLabel').textContent = dict.labels.docLang;
+      document.getElementById('docLangSub').textContent = dict.labels.docLangSub;
+      document.getElementById('densityLabel').textContent = dict.labels.density;
+      document.getElementById('densLonda').textContent = dict.labels.densLonda;
+      document.getElementById('densMuv').textContent = dict.labels.densMuv;
+      document.getElementById('densBat').textContent = dict.labels.densBat;
+      document.getElementById('extraLabel').textContent = dict.labels.extra;
+
+      document.getElementById('subjectInput').placeholder = dict.placeholders.subject;
+      document.getElementById('topicInput').placeholder = dict.placeholders.topic;
+      document.getElementById('authorInput').placeholder = dict.placeholders.author;
+      document.getElementById('groupInput').placeholder = dict.placeholders.group;
+      document.getElementById('teacherInput').placeholder = dict.placeholders.teacher;
+      document.getElementById('orgInput').placeholder = dict.placeholders.org;
+
+      document.getElementById('densityCaption').textContent = dict.densityCaptions[state.density] || dict.densityCaptions.muvozanatli;
+      document.getElementById('modalDesc').textContent = dict.modal.desc;
+      document.getElementById('cancelModalBtn').textContent = dict.modal.cancel;
+      document.getElementById('confirmSendBtn').textContent = dict.modal.ok;
+
+      updateModeUI();
+    }
+
     const MODE_CATEGORIES = {
-      taqdimot: [
-        { id: "all", label: "Barchasi" },
-        { id: "akademik", label: "Akademik" },
-        { id: "tibbiyot", label: "Tibbiyot & Kimyo" },
-        { id: "biznes", label: "Biznes" },
-        { id: "kreativ", label: "Kreativ" },
-        { id: "minimalist", label: "Minimalist" }
-      ],
-      referat: [
-        { id: "all", label: "Barchasi" },
-        { id: "akademik", label: "OTM Standart" },
-        { id: "jurnal", label: "Ilmiy Jurnal" },
-        { id: "minimal", label: "Minimalist" }
-      ],
-      test: [
-        { id: "all", label: "Barchasi" },
-        { id: "akademik", label: "Akademik" },
-        { id: "tibbiyot", label: "Tibbiyot" },
-        { id: "tech", label: "IT & Kreativ" }
-      ],
-      krossvord: [
-        { id: "all", label: "Barchasi" },
-        { id: "klassik", label: "Klassik (PDF+Word)" },
-        { id: "pptx", label: "O'yin & Doodle (.pptx)" }
-      ],
-      infografika: [
-        { id: "all", label: "Barchasi" },
-        { id: "pptx", label: "PowerPoint (.pptx)" },
-        { id: "pdf", label: "A4 Plakat (PDF)" }
-      ]
+      taqdimot: ["all", "akademik", "tibbiyot", "biznes", "kreativ", "minimalist"],
+      referat: ["all", "akademik", "jurnal", "minimal"],
+      test: ["all", "akademik", "tibbiyot", "tech"],
+      krossvord: ["all", "klassik", "pptx"],
+      infografika: ["all", "pptx", "pdf"]
     };
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialMode = urlParams.get("mode") || "taqdimot";
-    const initialLang = urlParams.get("lang") || "uz_lat";
-    const apiEndpoint = urlParams.get("api_url") || "";
+    const docLangByUi = { uz: "uz_lat", ru: "ru", en: "en" };
+    const effectiveInitLang = urlParams.get("lang") || docLangByUi[currentUiLang] || "uz_lat";
 
     let state = {
       mode: initialMode,       // taqdimot | referat | test | krossvord | infografika
@@ -1422,7 +1938,7 @@
       org: document.getElementById('orgInput').value,
       city: "Toshkent",
       year: "2026",
-      lang: initialLang,
+      lang: effectiveInitLang,
       count: 10,
       density: "muvozanatli",
       extra: "",
@@ -1468,16 +1984,18 @@
 
     function renderCategoryTabs() {
       const wrap = document.getElementById('catTabs');
-      const cats = MODE_CATEGORIES[state.mode] || MODE_CATEGORIES.taqdimot;
-      if (!cats.some(c => c.id === state.category)) {
+      const dict = UI_I18N[currentUiLang] || UI_I18N.uz;
+      const catIds = MODE_CATEGORIES[state.mode] || MODE_CATEGORIES.taqdimot;
+      const catLabels = (dict.categories && dict.categories[state.mode]) || dict.categories.taqdimot;
+      if (!catIds.includes(state.category)) {
         state.category = "all";
       }
-      wrap.innerHTML = cats.map(c =>
-        `<button type="button" class="cat-tab ${state.category === c.id ? 'active' : ''}" data-cat="${c.id}">${c.label}</button>`
+      wrap.innerHTML = catIds.map(cid =>
+        `<button type="button" class="cat-tab ${state.category === cid ? 'active' : ''}" data-cat="${cid}">${catLabels[cid] || cid}</button>`
       ).join('');
     }
 
-    const initialLangBtn = document.querySelector(`.lang-pill[data-lang="${initialLang}"]`);
+    const initialLangBtn = document.querySelector(`.lang-pill[data-lang="${effectiveInitLang}"]`);
     if (initialLangBtn) {
       document.querySelectorAll('.lang-pill').forEach(b => b.classList.remove('active'));
       initialLangBtn.classList.add('active');
@@ -1487,6 +2005,9 @@
       document.querySelectorAll('.mode-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.mode === state.mode);
       });
+
+      const dict = UI_I18N[currentUiLang] || UI_I18N.uz;
+      const mui = dict.modeUI;
 
       const docTypeGroup = document.getElementById('docTypeGroup');
       const graphicTypeGroup = document.getElementById('graphicTypeGroup');
@@ -1516,58 +2037,54 @@
       const poolCount = getTemplatesForCurrentMode().length;
 
       if (state.mode === 'taqdimot') {
-        templatesTitle.textContent = "Taqdimot shablonlari";
-        promoText.textContent = `Taqdimot: ${poolCount} ta shablon (Slidesgo & PGo .pptx), rasmlar · PDF + PPTX`;
-        counterLabel.textContent = "Slaydlar soni";
-        counterHelper.textContent = "Titul, Kirish, Reja, Manbalar va yakun slaydi doim bo'ladi.";
-        submitBtn.textContent = "Slayd tayyorlash · tekin";
-        extraInput.placeholder = "Masalan: Rasmlar mavzuga mos bo'lsin, bitta listida krossvord yoki jadval bo'lsin";
+        templatesTitle.textContent = mui.taqdimot.tplTitle;
+        promoText.textContent = mui.taqdimot.promo(poolCount);
+        counterLabel.textContent = mui.taqdimot.counterLabel;
+        counterHelper.textContent = mui.taqdimot.counterHelper;
+        submitBtn.textContent = mui.taqdimot.submit;
+        extraInput.placeholder = mui.taqdimot.extraPh;
         if (state.count < 6 || state.count > 20) state.count = 10;
       } else if (state.mode === 'referat') {
         docTypeGroup.classList.remove('hidden');
         subjectGroup.classList.remove('hidden');
         teacherGroup.classList.remove('hidden');
-        templatesTitle.textContent = `${state.docType} dizaynlari`;
-        promoText.textContent = `${state.docType} — ${poolCount} xil akademik dizayn (Word + PDF)`;
-        counterLabel.textContent = "Sahifalar (betlar) soni";
-        counterHelper.textContent = "Titul beti, Mundarija (Reja), Kirish, Asosiy boblar, Xulosa va Manbalar kiritiladi.";
-        submitBtn.textContent = `${state.docType} tayyorlash (Word + PDF)`;
-        extraInput.placeholder = "Masalan: Jadval, formulalar va O'zbekiston amaliyoti bo'lsin";
+        const dispDocType = dict.docTypes[state.docType] || state.docType;
+        templatesTitle.textContent = mui.referat.tplTitle(dispDocType);
+        promoText.textContent = mui.referat.promo(dispDocType, poolCount);
+        counterLabel.textContent = mui.referat.counterLabel;
+        counterHelper.textContent = mui.referat.counterHelper;
+        submitBtn.textContent = mui.referat.submit(dispDocType);
+        extraInput.placeholder = mui.referat.extraPh;
         if (state.count < 5 || state.count > 35) state.count = 12;
       } else if (state.mode === 'test') {
         subjectGroup.classList.remove('hidden');
-        templatesTitle.textContent = "Test varag'i shablonlari";
-        promoText.textContent = `Testlar to'plami — ${poolCount} xil uslub, 4 variant (A, B, C, D) va kalit (Word + PDF)`;
-        counterLabel.textContent = "Test savollari soni";
-        counterHelper.textContent = "Har bir savol 4 ta variant va oxirgi betda to'g'ri javoblar kaliti bilan tuziladi.";
-        submitBtn.textContent = "Testlar to'plamini tayyorlash (Word + PDF)";
-        extraInput.placeholder = "Masalan: Klinik vaziyatli masalalar va formulali savollar ham qo'shilsin";
+        templatesTitle.textContent = mui.test.tplTitle;
+        promoText.textContent = mui.test.promo(poolCount);
+        counterLabel.textContent = mui.test.counterLabel;
+        counterHelper.textContent = mui.test.counterHelper;
+        submitBtn.textContent = mui.test.submit;
+        extraInput.placeholder = mui.test.extraPh;
         if (state.count < 5 || state.count > 50) state.count = 15;
       } else if (state.mode === 'krossvord') {
         subjectGroup.classList.remove('hidden');
         densityGroup.classList.add('hidden');
-        templatesTitle.textContent = "Krossvord shablonlari";
-        promoText.textContent = `Krossvord — ${poolCount} ta dizayn: bo'sh to'r + javoblar kaliti (PDF + Word + PPTX)`;
-        counterLabel.textContent = "Krossvord so'zlari soni";
-        counterHelper.textContent = "1-betda yechish uchun bo'sh katakchali krossvord, 2-betda to'ldirilgan javoblar chiqadi.";
-        submitBtn.textContent = "Krossvord tayyorlash (PDF + Word)";
-        extraInput.placeholder = "Masalan: Faqat asosiy atamalar va preparat/reaksiya nomlari bo'lsin";
+        templatesTitle.textContent = mui.krossvord.tplTitle;
+        promoText.textContent = mui.krossvord.promo(poolCount);
+        counterLabel.textContent = mui.krossvord.counterLabel;
+        counterHelper.textContent = mui.krossvord.counterHelper;
+        submitBtn.textContent = mui.krossvord.submit;
+        extraInput.placeholder = mui.krossvord.extraPh;
         if (state.count < 6 || state.count > 20) state.count = 10;
       } else if (state.mode === 'infografika') {
         graphicTypeGroup.classList.remove('hidden');
         subjectGroup.classList.remove('hidden');
         counterGroup.classList.add('hidden');
         densityGroup.classList.add('hidden');
-        const gNames = {
-          klaster: "Klaster shablonlari",
-          baliq: "Baliq skeleti / Oqim shablonlari",
-          venn: "Venn diagrammasi shablonlari",
-          swot: "SWOT tahlil shablonlari"
-        };
-        templatesTitle.textContent = gNames[state.graphicType] || "Grafik shablonlari";
-        promoText.textContent = `${gNames[state.graphicType] || "Grafik"}: ${poolCount} ta shablon · A4 PDF + tahrirlanadigan .PPTX`;
-        submitBtn.textContent = "Grafik organayzer tayyorlash";
-        extraInput.placeholder = "Masalan: Markaziy tushuncha va tarmoqlar aniq misollar bilan yozilsin";
+        const gName = mui.infografika.gNames[state.graphicType] || "Grafiklar";
+        templatesTitle.textContent = gName;
+        promoText.textContent = mui.infografika.promo(gName, poolCount);
+        submitBtn.textContent = mui.infografika.submit;
+        extraInput.placeholder = mui.infografika.extraPh;
       }
       renderCategoryTabs();
       renderTemplates();
@@ -1576,21 +2093,20 @@
 
     function updateCounterText() {
       const el = document.getElementById('countValueText');
-      if (state.mode === 'taqdimot') el.textContent = `${state.count} ta slayd`;
-      else if (state.mode === 'referat') el.textContent = `${state.count} bet (sahifa)`;
-      else if (state.mode === 'test') el.textContent = `${state.count} ta test savoli`;
-      else if (state.mode === 'krossvord') el.textContent = `${state.count} ta kalit so'z`;
-      else if (state.mode === 'infografika') el.textContent = `1 betlik A4 infografika`;
+      const dict = UI_I18N[currentUiLang] || UI_I18N.uz;
+      const fn = dict.counterUnit[state.mode];
+      if (fn) el.textContent = fn(state.count);
     }
 
     function renderTemplates() {
       const grid = document.getElementById('templatesGrid');
-      const liveTitle = (state.topic || "Parafinlar sintezi va xossalari").trim();
-      const liveMeta = `${state.author || "Muallif"} · ${state.org || "OTM"}`;
+      const dict = UI_I18N[currentUiLang] || UI_I18N.uz;
+      const liveTitle = (state.topic || dict.liveDefaults.topic).trim();
+      const liveMeta = `${state.author || dict.liveDefaults.author} · ${state.org || dict.liveDefaults.org}`;
 
       const modePool = getTemplatesForCurrentMode();
       const filtered = modePool.filter(t => state.category === 'all' || t.cat === state.category);
-      document.getElementById('tplCountLabel').textContent = `${filtered.length} ta`;
+      document.getElementById('tplCountLabel').textContent = dict.countSuffix(filtered.length);
 
       grid.innerHTML = filtered.map(t => {
         const isSelected = t.id === state.templateId;
@@ -1627,6 +2143,35 @@
       }[m]));
     }
 
+    const uiLangBtn = document.getElementById('uiLangBtn');
+    const uiLangMenu = document.getElementById('uiLangMenu');
+    uiLangBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      uiLangMenu.classList.toggle('open');
+    });
+    document.getElementById('uiLangMenu').addEventListener('click', e => {
+      const opt = e.target.closest('.ui-lang-option');
+      if (!opt) return;
+      const chosenUi = opt.dataset.uilang;
+      uiLangMenu.classList.remove('open');
+      try { localStorage.setItem("slaydchi_ui_lang", chosenUi); } catch (err) {}
+      if (!userPickedDocLang) {
+        const mappedDocLang = { uz: "uz_lat", ru: "ru", en: "en" }[chosenUi] || "uz_lat";
+        const pill = document.querySelector(`.lang-pill[data-lang="${mappedDocLang}"]`);
+        if (pill) {
+          document.querySelectorAll('.lang-pill').forEach(b => b.classList.remove('active'));
+          pill.classList.add('active');
+          state.lang = mappedDocLang;
+        }
+      }
+      applyUiLanguage(chosenUi);
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#uiLangWrap')) {
+        uiLangMenu.classList.remove('open');
+      }
+    });
+
     document.getElementById('modeNav').addEventListener('click', e => {
       const btn = e.target.closest('.mode-tab');
       if (!btn) return;
@@ -1653,8 +2198,9 @@
     });
 
     function updateTemplateLiveText() {
-      const liveTitle = (state.topic || "Parafinlar sintezi va xossalari").trim();
-      const liveMeta = `${state.author || "Muallif"} · ${state.org || "OTM"}`;
+      const dict = UI_I18N[currentUiLang] || UI_I18N.uz;
+      const liveTitle = (state.topic || dict.liveDefaults.topic).trim();
+      const liveMeta = `${state.author || dict.liveDefaults.author} · ${state.org || dict.liveDefaults.org}`;
       document.querySelectorAll('.tpl-live-title').forEach(el => { el.textContent = liveTitle; });
       document.querySelectorAll('.tpl-live-meta').forEach(el => { el.textContent = liveMeta; });
     }
@@ -1684,10 +2230,11 @@
       document.querySelectorAll('.lang-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.lang = btn.dataset.lang;
+      userPickedDocLang = true;
     });
 
     document.getElementById('minusCount').addEventListener('click', () => {
-      const minVal = 6;
+      const minVal = (state.mode === 'referat' || state.mode === 'test') ? 5 : 6;
       if (state.count > minVal) {
         state.count -= (state.mode === 'test' ? 5 : 1);
         if (state.count < minVal) state.count = minVal;
@@ -1695,9 +2242,10 @@
       }
     });
     document.getElementById('plusCount').addEventListener('click', () => {
-      const maxVal = state.mode === 'test' ? 40 : (state.mode === 'referat' ? 30 : 20);
+      const maxVal = state.mode === 'test' ? 50 : (state.mode === 'referat' ? 35 : 20);
       if (state.count < maxVal) {
         state.count += (state.mode === 'test' ? 5 : 1);
+        if (state.count > maxVal) state.count = maxVal;
         updateCounterText();
       }
     });
@@ -1708,7 +2256,8 @@
       document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.density = btn.dataset.density;
-      document.getElementById('densityCaption').textContent = DENSITY_CAPTIONS[state.density];
+      const dict = UI_I18N[currentUiLang] || UI_I18N.uz;
+      document.getElementById('densityCaption').textContent = dict.densityCaptions[state.density] || "";
     });
 
     document.getElementById('catTabs').addEventListener('click', e => {
@@ -1722,14 +2271,15 @@
 
     const modal = document.getElementById('confirmModal');
     document.getElementById('openConfirmBtn').addEventListener('click', () => {
+      const dict = UI_I18N[currentUiLang] || UI_I18N.uz;
       const cleanTopic = state.topic.trim();
       if (!cleanTopic) {
-        alert("Iltimos, avval mavzuni kiriting!");
+        alert(dict.modal.alertTopic);
         document.getElementById('topicInput').focus();
         return;
       }
-      document.getElementById('modalTopicTitle').textContent = `Mavzu: «${cleanTopic}»`;
-      document.getElementById('modalSlideMeta').textContent = document.getElementById('countValueText').textContent + " · tayyorlash";
+      document.getElementById('modalTopicTitle').textContent = dict.modal.topicPrefix(cleanTopic);
+      document.getElementById('modalSlideMeta').textContent = document.getElementById('countValueText').textContent + dict.modal.metaSuffix;
       modal.classList.add('show');
     });
 
@@ -1739,19 +2289,21 @@
 
     document.getElementById('confirmSendBtn').addEventListener('click', async () => {
       modal.classList.remove('show');
+      const dict = UI_I18N[currentUiLang] || UI_I18N.uz;
       const payload = {
         action: "create_slaydchi_content",
         user_id: tgUserId,
+        ui_lang: currentUiLang,
         mode: state.mode,
         doc_type: state.docType,
         graphic_type: state.graphicType,
         subject: state.subject.trim(),
         topic: state.topic.trim(),
-        author: state.author.trim() || "Talaba",
+        author: state.author.trim() || dict.liveDefaults.student,
         group: state.group.trim(),
         teacher: state.teacher.trim(),
-        org: state.org.trim() || "OTM",
-        city: state.city.trim() || "Toshkent",
+        org: state.org.trim() || dict.liveDefaults.org,
+        city: state.city.trim() || dict.liveDefaults.city,
         year: state.year.trim() || "2026",
         lang: state.lang,
         slides_count: state.count,
@@ -1782,15 +2334,14 @@
           tg.sendData(JSON.stringify(payload));
           tg.close();
         } catch (e) {
-          alert("Yuborishda xatolik: " + (e?.message || e));
+          alert(dict.modal.sendErr + (e?.message || e));
         }
       } else {
-        alert("Ma'lumot tayyor: " + JSON.stringify(payload, null, 2));
+        alert(dict.modal.readyAlert + JSON.stringify(payload, null, 2));
       }
     });
 
-    updateModeUI();
-    renderTemplates();
+    applyUiLanguage(currentUiLang);
   </script>
 </body>
 </html>
