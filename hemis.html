@@ -1805,9 +1805,9 @@
                 <button type="button" class="btn btn-sm btn-ghost" data-nav="timetable">${esc(t('all'))}</button>
               </div>
               ${radar.lessons.length ? radar.lessons.map(l => `
-                <div class="row-item">
+                <div class="row-item" data-open-subj="${esc(l.subject)}" style="cursor:pointer;">
                   <div style="min-width:0;">
-                    <div style="font-weight:700;font-size:13.5px;">${esc(l.subject)}</div>
+                    <div style="font-weight:700;font-size:13.5px;color:var(--brand);">${esc(l.subject)} →</div>
                     <div style="font-size:12px;color:var(--text-secondary);">${esc(l.type)} • ${esc(l.room)} • ${esc(l.teacher)}</div>
                   </div>
                   <span class="pill pill-brand" style="flex-shrink:0;">${esc(l.start_time)}–${esc(l.end_time)}</span>
@@ -1821,9 +1821,9 @@
                 <button type="button" class="btn btn-sm btn-ghost" data-nav="subjects">${esc(t('all'))}</button>
               </div>
               ${state.dailyGrades.length ? state.dailyGrades.slice(0, 5).map(g => `
-                <div class="row-item">
+                <div class="row-item" data-open-subj="${esc(g.subject)}" style="cursor:pointer;">
                   <div style="min-width:0;">
-                    <div style="font-weight:700;font-size:13.5px;">${esc(g.subject)}</div>
+                    <div style="font-weight:700;font-size:13.5px;color:var(--brand);">${esc(g.subject)} →</div>
                     <div style="font-size:11.5px;color:var(--text-secondary);">${esc(g.lesson_date)} ${g.type ? '• ' + esc(g.type) : ''}</div>
                   </div>
                   <span class="pill pill-success" style="font-size:13px;">${esc(g.grade)}</span>
@@ -1929,10 +1929,10 @@
                 const col = attColor(r.percent);
                 const w = Math.min(100, Math.round((pct / Math.max(1, th.limit)) * 100));
                 return `
-                  <div class="card">
+                  <div class="card" data-open-subj="${esc(r.subject)}" style="cursor:pointer;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;">
                       <div>
-                        <div style="font-weight:700;font-size:14px;">${esc(r.subject)}</div>
+                        <div style="font-weight:700;font-size:14px;color:var(--brand);">${esc(r.subject)} →</div>
                         <div style="font-size:12px;color:var(--text-secondary);">${esc(t('auditoryHours'))}: ${esc(r.total_hours)} ${esc(h)} • ${esc(t('excusedWord'))}: ${esc(r.excused)} ${esc(h)} • ${esc(t('unexcusedWord'))}: ${esc(r.unexcused)} ${esc(h)}</div>
                       </div>
                       <span class="pill" style="background:color-mix(in srgb, ${col} 14%, transparent);color:${col};font-weight:700;">
@@ -2006,8 +2006,8 @@
             const nums = items.map(x => Number(x.grade_num)).filter(n => !Number.isNaN(n));
             const avg = nums.length ? (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(1) : '-';
             return `
-              <div class="card">
-                <div class="card-title"><span>${esc(subj)}</span><span class="pill pill-brand">${esc(t('avgWord'))}: ${esc(avg)}</span></div>
+              <div class="card" data-open-subj="${esc(subj)}" style="cursor:pointer;">
+                <div class="card-title"><span style="color:var(--brand);">${esc(subj)} (${items.length}) →</span><span class="pill pill-brand">${esc(t('avgWord'))}: ${esc(avg)}</span></div>
                 ${items.slice(0, 8).map(g => `
                   <div class="row-item">
                     <div style="font-size:12.5px;color:var(--text-secondary);">${esc(g.lesson_date)} • ${esc(g.type)} ${g.pair ? '• ' + esc(g.pair) : ''}</div>
@@ -2019,9 +2019,9 @@
           }).join('');
         } else {
           listHtml = `<div class="card">${dg.slice(0, 30).map(g => `
-            <div class="row-item">
+            <div class="row-item" data-open-subj="${esc(g.subject)}" style="cursor:pointer;">
               <div>
-                <div style="font-weight:700;">${esc(g.subject)}</div>
+                <div style="font-weight:700;color:var(--brand);">${esc(g.subject)} →</div>
                 <div style="font-size:11.5px;color:var(--text-secondary);">${esc(g.lesson_date)} • ${esc(g.type)} • ${esc(g.teacher || '')}</div>
               </div>
               <span class="pill pill-success" style="font-size:13px;">${esc(g.grade)}</span>
@@ -2043,13 +2043,21 @@
             ${list.length ? `
               <div class="table-wrap"><table>
                 <thead><tr><th>${esc(t('thSubj'))}</th><th>JN</th><th>ON</th><th>YN</th><th>${esc(t('thTotal'))}</th></tr></thead>
-                <tbody>${list.map(x => `
-                  <tr>
-                    <td style="font-weight:600;">${esc(x.subject)}</td>
+                <tbody>${list.map(x => {
+                  const subInfo = collectSubjectDetails(x.subject, curSem);
+                  const gCnt = subInfo.dailyGrades.length;
+                  const gAvg = subInfo.avgDaily;
+                  return `
+                  <tr data-open-subj="${esc(x.subject)}" data-open-sem="${esc(curSem)}" style="cursor:pointer;">
+                    <td>
+                      <div style="font-weight:700;color:var(--brand);">${esc(x.subject)} →</div>
+                      ${gCnt ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">📝 ${gCnt} ta kunlik baho${gAvg ? ' • ' + esc(t('avgWord')) + ': ' + esc(gAvg) : ''}</div>` : ''}
+                    </td>
                     <td>${esc(x.jn)}</td><td>${esc(x.on)}</td><td>${esc(x.yn)}</td>
                     <td><span class="pill pill-brand">${esc(x.total)}</span></td>
                   </tr>
-                `).join('')}</tbody>
+                `;
+                }).join('')}</tbody>
               </table></div>
             ` : `<div class="empty-box">${esc(t('noData'))}</div>`}
           </div>
@@ -2134,9 +2142,9 @@
           <div class="card">
             <div class="card-title"><span>${esc(t('debtsTitle'))}</span><span class="pill ${debts.length ? 'pill-danger' : 'pill-success'}">${debts.length}</span></div>
             ${debts.length ? debts.map(d => `
-              <div class="row-item">
+              <div class="row-item" data-open-subj="${esc(d.subject)}" data-open-sem="${esc(d.semester || '')}" style="cursor:pointer;">
                 <div>
-                  <div style="font-weight:700;">${esc(d.subject)}</div>
+                  <div style="font-weight:700;color:var(--brand);">${esc(d.subject)} →</div>
                   <div style="font-size:12px;color:var(--text-secondary);">${esc(d.semester)} • JN:${esc(d.jn)} ON:${esc(d.on)} YN:${esc(d.yn)}</div>
                 </div>
                 <span class="pill pill-danger">${esc(d.total)} ${esc(t('thScore'))}</span>
@@ -2149,14 +2157,22 @@
               <div class="card-title"><span>${esc(semName)} — ${esc(t('eduplanWord'))}</span><span class="pill pill-neutral">${list.length}</span></div>
               <div class="table-wrap"><table>
                 <thead><tr><th>${esc(t('thSubj'))}</th><th>${esc(t('thCredit'))}</th><th>${esc(t('thHours'))}</th><th>${esc(t('thType'))}</th><th>${esc(t('thScore'))}</th></tr></thead>
-                <tbody>${list.map(s => `
-                  <tr>
-                    <td style="font-weight:600;">${esc(s.subject)}</td>
+                <tbody>${list.map(s => {
+                  const subInfo = collectSubjectDetails(s.subject, semName);
+                  const gCnt = subInfo.dailyGrades.length || Number(s.grades_count || 0);
+                  const gAvg = subInfo.avgDaily || s.avg_daily || '';
+                  return `
+                  <tr data-open-subj="${esc(s.subject)}" data-open-sem="${esc(semName)}" style="cursor:pointer;">
+                    <td>
+                      <div style="font-weight:700;color:var(--brand);">${esc(s.subject)} →</div>
+                      ${gCnt ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">📝 ${gCnt} ta kunlik baho${gAvg ? ' • ' + esc(t('avgWord')) + ': ' + esc(gAvg) : ''}</div>` : ''}
+                    </td>
                     <td>${esc(s.credit)}</td><td>${esc(s.total_acload)}</td>
                     <td>${esc(s.exam_finish || s.subject_type || '-')}</td>
                     <td><span class="pill pill-brand">${esc(s.total)}</span></td>
                   </tr>
-                `).join('')}</tbody>
+                `;
+                }).join('')}</tbody>
               </table></div>
             </div>
           `).join('')}
@@ -2481,6 +2497,197 @@
       `;
     }
 
+    function normSubj(s) {
+      return String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    }
+
+    function collectSubjectDetails(subjName, semHint = '') {
+      const key = normSubj(subjName);
+      let semEntry = null;
+      let resolvedSem = semHint || '';
+      const allSems = state.grades || {};
+      if (semHint && Array.isArray(allSems[semHint])) {
+        semEntry = allSems[semHint].find(x => normSubj(x.subject) === key) || null;
+      }
+      if (!semEntry) {
+        for (const [sName, arr] of Object.entries(allSems).reverse()) {
+          const hit = (arr || []).find(x => normSubj(x.subject) === key);
+          if (hit) {
+            semEntry = hit;
+            resolvedSem = resolvedSem || sName;
+            break;
+          }
+        }
+      }
+
+      let eduEntry = null;
+      const eduSems = (state.eduplan && state.eduplan.semesters) || {};
+      if (resolvedSem && Array.isArray(eduSems[resolvedSem])) {
+        eduEntry = eduSems[resolvedSem].find(x => normSubj(x.subject) === key) || null;
+      }
+      if (!eduEntry) {
+        for (const [sName, arr] of Object.entries(eduSems).reverse()) {
+          const hit = (arr || []).find(x => normSubj(x.subject) === key);
+          if (hit) {
+            eduEntry = hit;
+            resolvedSem = resolvedSem || sName;
+            break;
+          }
+        }
+      }
+
+      const rawDaily = [
+        ...((semEntry && Array.isArray(semEntry.grades)) ? semEntry.grades : []),
+        ...((eduEntry && Array.isArray(eduEntry.grades)) ? eduEntry.grades : []),
+        ...(state.dailyGrades || []).filter(g => normSubj(g.subject) === key && (!semHint || !g.semester || g.semester === semHint)),
+      ];
+      const seenIds = new Set();
+      const dailyGrades = [];
+      for (const g of rawDaily) {
+        if (!g || typeof g !== 'object') continue;
+        const k = String(g.id || `${g.lesson_date}|${g.pair}|${g.grade}|${g.type}`);
+        if (seenIds.has(k)) continue;
+        seenIds.add(k);
+        dailyGrades.push(g);
+      }
+
+      const nums = dailyGrades.map(x => Number(x.grade_num ?? x.grade)).filter(n => !Number.isNaN(n));
+      const avgDaily = nums.length
+        ? (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(1).replace(/\.0$/, '')
+        : ((semEntry && semEntry.avg_daily) || (eduEntry && eduEntry.avg_daily) || '');
+
+      const attRow = (state.attendance.report || []).find(r => normSubj(r.subject) === key) || null;
+      const missedLogs = (state.attendance.recent || []).filter(r => normSubj(r.subject) === key);
+      const resources = ((state.subjectDetail && state.subjectDetail.resources) || []).filter(r => normSubj(r.subject) === key);
+      const tasks = ((state.subjectDetail && state.subjectDetail.tasks) || []).filter(r => normSubj(r.subject) === key);
+
+      return {
+        subject: (semEntry && semEntry.subject) || (eduEntry && eduEntry.subject) || subjName,
+        semester: resolvedSem,
+        jn: (semEntry && semEntry.jn) || (eduEntry && eduEntry.jn) || '0',
+        on: (semEntry && semEntry.on) || (eduEntry && eduEntry.on) || '0',
+        yn: (semEntry && semEntry.yn) || (eduEntry && eduEntry.yn) || '0',
+        total: (semEntry && semEntry.total) || (eduEntry && eduEntry.total) || '0',
+        credit: (eduEntry && eduEntry.credit) || '',
+        totalAcload: (eduEntry && eduEntry.total_acload) || '',
+        examFinish: (eduEntry && (eduEntry.exam_finish || eduEntry.subject_type)) || '',
+        avgDaily,
+        dailyGrades,
+        attRow,
+        missedLogs,
+        resources,
+        tasks,
+      };
+    }
+
+    function openSubjectModal(subjName, semName = '') {
+      if (!subjName) return;
+      state.ui.modalSubject = { name: subjName, sem: semName || '' };
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (API_BASE && state.authenticated && !state.ui.loadedSections.subject_detail) {
+        loadSection('subject_detail');
+      }
+    }
+
+    function renderSubjectModal() {
+      const ms = state.ui.modalSubject;
+      if (!ms || !ms.name) return '';
+      const info = collectSubjectDetails(ms.name, ms.sem);
+      const h = t('hoursShort');
+      const attPct = info.attRow ? info.attRow.percent : null;
+      const attCol = attColor(attPct);
+      return `
+        <div class="stack">
+          <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:16px;font-weight:800;color:var(--brand);">📚 ${esc(info.subject)}</div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:3px;">
+                ${info.semester ? `<span>${esc(info.semester)}</span>` : ''}
+                ${info.credit ? ` • <span>${esc(t('thCredit'))}: ${esc(info.credit)}</span>` : ''}
+                ${info.totalAcload ? ` • <span>${esc(t('thHours'))}: ${esc(info.totalAcload)} ${esc(h)}</span>` : ''}
+                ${info.examFinish ? ` • <span>${esc(info.examFinish)}</span>` : ''}
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" data-act="close-subj-modal">← ${esc(t('cancel'))}</button>
+          </div>
+
+          <div class="grid-4">
+            <div class="kpi-card">
+              <div class="kpi-label"><span>${esc(t('dailyGrades'))}</span>${ICONS.book}</div>
+              <div class="kpi-val">${esc(info.avgDaily || '-')}</div>
+              <div class="kpi-sub">${info.dailyGrades.length} ta kunlik baho</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label"><span>JN / ON / YN</span>${ICONS.layers}</div>
+              <div class="kpi-val" style="font-size:17px;">${esc(info.jn)} / ${esc(info.on)} / ${esc(info.yn)}</div>
+              <div class="kpi-sub">${esc(t('performance'))}</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label"><span>${esc(t('thTotal'))}</span>${ICONS.award}</div>
+              <div class="kpi-val">${esc(info.total)}</div>
+              <div class="kpi-sub">${esc(t('thScore'))}</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label"><span>${esc(t('attendance'))}</span>${ICONS.check}</div>
+              <div class="kpi-val" style="color:${attCol};">${attPct === null ? '-' : esc(attPct) + '%'}</div>
+              <div class="kpi-sub">${info.attRow ? `${esc(info.attRow.total_missed)} / ${esc(info.attRow.total_hours)} ${esc(h)}` : esc(t('allOkAtt'))}</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span>📝 ${esc(t('dailyGrades'))} (${info.dailyGrades.length})</span>
+              ${info.avgDaily ? `<span class="pill pill-brand">${esc(t('avgWord'))}: ${esc(info.avgDaily)}</span>` : ''}
+            </div>
+            ${info.dailyGrades.length ? info.dailyGrades.map(g => `
+              <div class="row-item">
+                <div>
+                  <div style="font-weight:700;font-size:13.5px;">📅 ${esc(g.lesson_date || '-')} ${g.pair ? '• ' + esc(g.pair) : ''} ${g.time ? '(' + esc(g.time) + ')' : ''}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">${esc(g.type || t('lessonType'))} ${g.teacher ? '• 👨‍🏫 ' + esc(g.teacher) : ''}</div>
+                </div>
+                <span class="pill pill-success" style="font-size:14px;font-weight:800;">${esc(g.grade)}</span>
+              </div>
+            `).join('') : `<div class="empty-box">${esc(t('noData'))}</div>`}
+          </div>
+
+          ${info.missedLogs.length ? `
+            <div class="card">
+              <div class="card-title"><span>📊 Qoldirilgan dars sanalari (${info.missedLogs.length})</span></div>
+              ${info.missedLogs.map(x => {
+                const isExc = x.excused === 'Ha';
+                const pillCls = isExc ? 'pill-success' : 'pill-danger';
+                return `
+                  <div class="row-item">
+                    <div>
+                      <div style="font-weight:700;">${esc(x.date)} • ${esc(x.type)}</div>
+                      <div style="font-size:12px;color:var(--text-secondary);">${esc(x.teacher || '')}</div>
+                    </div>
+                    <span class="pill ${pillCls}">${esc(x.hours)} ${esc(h)} • ${esc(isExc ? t('excusedWord') : t('unexcusedWord'))}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          ` : ''}
+
+          ${(info.resources.length || info.tasks.length) ? `
+            <div class="card">
+              <div class="card-title"><span>📎 ${esc(t('resourcesTasks'))} (${info.resources.length + info.tasks.length})</span></div>
+              ${info.resources.slice(0, 30).map(rs => `
+                <div class="row-item" style="align-items:flex-start;">
+                  <div style="min-width:0;">
+                    <div style="font-weight:700;">${esc(rs.name)}</div>
+                    <div style="font-size:12px;color:var(--text-secondary);">${esc(rs.training_type)}${rs.teacher ? ' • ' + esc(rs.teacher) : ''}</div>
+                    ${(rs.files || []).map(f => `<div style="margin-top:4px;"><button type="button" class="btn btn-sm btn-ghost" data-external="${esc(f.url)}">📎 ${esc(f.name)}</button></div>`).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
     function render() {
       renderChrome();
       const root = document.getElementById('appRoot');
@@ -2490,6 +2697,10 @@
       }
       if (!state.authenticated || state.ui.showLoginModal) {
         root.innerHTML = renderLoginView();
+        return;
+      }
+      if (state.ui.modalSubject && state.ui.modalSubject.name) {
+        root.innerHTML = renderSubjectModal();
         return;
       }
       const views = {
@@ -2514,6 +2725,7 @@
       if (!target) return;
       const navEl = target.closest('[data-nav]');
       if (navEl) {
+        state.ui.modalSubject = null;
         navTo(navEl.dataset.nav);
         return;
       }
@@ -2527,9 +2739,19 @@
         downloadHemisDoc(dlEl.dataset.dlFile || '', dlEl.dataset.dlLink || '');
         return;
       }
+      const subjEl = target.closest('[data-open-subj]');
+      if (subjEl) {
+        openSubjectModal(subjEl.dataset.openSubj || '', subjEl.dataset.openSem || '');
+        return;
+      }
       const actEl = target.closest('[data-act]');
       if (!actEl) return;
       const act = actEl.dataset.act;
+      if (act === 'close-subj-modal') {
+        state.ui.modalSubject = null;
+        render();
+        return;
+      }
       if (act === 'refresh') forceRefresh();
       else if (act === 'cycle-lang') cycleLanguage();
       else if (act === 'toggle-theme') toggleTheme();
